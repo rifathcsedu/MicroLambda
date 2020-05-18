@@ -16,7 +16,6 @@ then
         apt-cache policy docker-ce
         sudo apt install docker-ce -y
         sudo usermod -aG docker ${USER}
-        sudo systemctl status docker
     fi
 else
   sudo apt update -y
@@ -27,6 +26,6 @@ else
   apt-cache policy docker-ce
   sudo apt install docker-ce -y
   sudo usermod -aG docker ${USER}
-  sudo systemctl status docker
 fi
 #etc.
+sudo usermod -aG docker ${USER}
