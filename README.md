@@ -1,4 +1,4 @@
-# MicroLambda
+# MicroLambda: V2
 
 ## Docker installation for Ubuntu 18.04
 Clone the project into the each RPI and run this commands:
