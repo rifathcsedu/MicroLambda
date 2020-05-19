@@ -7,7 +7,7 @@ func=input()
 manager=subprocess.check_output("docker info |grep 'Node Address: ' | tr --delete 'Node Address: '",shell=True)
 manager=manager.split()[0]
 cmd+=func
-cmd+=" --gateway https://"+str(manager.decode("utf-8"))+str(":8080")
+cmd+=" --gateway http://"+str(manager.decode("utf-8"))+str(":8080")
 print(cmd)
 os.chdir("../App/")
 os.system(cmd)
