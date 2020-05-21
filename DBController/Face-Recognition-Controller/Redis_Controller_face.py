@@ -1,23 +1,16 @@
 import redis
-redis_host = "10.200.54.91"
 import os
 import time
 import json
-redis_port = 6379
-redis_password = ""
-def publish_redis(data):
-    r = redis.Redis(host=redis_host, port=redis_port)
-    r.publish('SortTrigger',str(json.dumps({
-        "data": data
-    })))
+
+from ../../Config/RedisPubSub import *
+from ../../Config/configuration import *
+from FaceRecognition import *
+
 def subscribe_redis():
-    r = redis.Redis(host=redis_host, port=redis_port)
     p = r.pubsub()
-    p.subscribe('Notification')
-    f=open("shortlambda_face.txt","r")
-    url=f.read()
-    f.close()
-    url=url[0:len(url)-1]
+    p.subscribe(Topic["publish_face_app"])
+    url=
     while True:
         message = p.get_message()
         if message and message["data"]!=1L:
