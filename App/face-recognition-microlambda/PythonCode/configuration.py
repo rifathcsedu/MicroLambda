@@ -6,13 +6,14 @@ Database = dict(
 
 Topic = dict(
     publish_face_app = 'ImageStateStore',
-    subscribe_face_app = '',
     input_face_app='ImageInput',
     result_face_app='ResultImageApp',
-    publish_human_activity_app = '',
-    subscribe_human_activity_app = '',
-    publish_air_pollution_app = '',
-    subscribe_air_pollution_app = '',
+    publish_human_activity_app = 'HumanStateStore',
+    input_human_activity_app='HumanInput',
+    result_human_activity_app='ResultHumanApp',
+    publish_air_pollution_app='PollutionStateStore',
+    input_air_pollution_app='PollutionInput',
+    result_air_pollution_app='ResultPollutionApp',
 )
 
 MicroLambda=dict(
