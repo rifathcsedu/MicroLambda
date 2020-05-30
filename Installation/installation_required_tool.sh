@@ -15,9 +15,11 @@ then
         echo 'pip exists'
     else
         sudo apt install python-pip -y
+        sudo apt install python3-pip -y
     fi
 else
     sudo apt install python-pip -y
+    sudo apt install python3-pip -y
 fi
 
 
@@ -25,4 +27,5 @@ filename='required_software.txt'
 n=1
 while read line; do
 pip install $line
+pip3 install $line
 done < $filename

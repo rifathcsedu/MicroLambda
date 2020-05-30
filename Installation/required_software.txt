@@ -1,0 +1,8 @@
+redis
+requests
+dlib
+numpy
+face_recognition
+wheel
+pandas
+sklearn

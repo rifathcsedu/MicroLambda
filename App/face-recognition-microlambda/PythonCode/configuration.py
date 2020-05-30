@@ -23,6 +23,6 @@ MicroLambda=dict(
 
 AppURL = dict(
     face_app = 'http://10.200.87.202:8080/function/face-recognition-microlambda',
-    air_pollution_app = '',
+    air_pollution_app = 'http://10.200.87.202:8080/function/air-pollution-microlambda',
     human_activity_app='',
 )
