@@ -1,0 +1,10 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://10.200.87.202:8080
+functions:
+  air-pollution-microlambda:
+    lang: dockerfile
+    handler: ./air-pollution-microlambda
+    image: air-pollution-microlambda:latest
+
