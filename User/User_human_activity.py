@@ -4,75 +4,104 @@ import base64
 import time
 import csv
 import sys
-import face_recognition
 import os
+
+import numpy as np
+from sklearn import preprocessing
+import pandas as pd
+
 sys.path.append('../Config/')
+sys.path.append('../Class/')
+
 from RedisPubSub import *
 from configuration import *
+from AirPollution import *
 
-def WriteCSV(path,data):
+#store metrics to CSV
+def WriteCSV(path, data):
     print("Writing output and metrics in CSV...")
     with open(path, 'a') as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(data)
     print("Writing Done!")
-def load_images(arr):
-    pickle_data=[]
-    r = redis.Redis(host=redis_host, port=redis_port)
-    for i in arr:
-        data = {}
-        known_image = face_recognition.load_image_file("../Dataset/Face-Recognition-Input/"+i)
-        r.rpush(Topic["input_face_app"],pickle.dumps(known_image))
-    publish_redis(Topic["input_face_app"],str(json.dumps({
-        "data": [],
-        "size": len(arr),
-        "threshold":float(MicroLambda["short_lambda"])
+
+#upload the data to Redis
+def load_data(filename, chunksize):
+    print("Data uploading started!!!")
+    column_names = ['user_id', 'activity', 'timestamp', 'x_axis', 'y_axis', 'z_axis']
+    df = pd.read_csv(filename, header=None, names=column_names)
+    df.z_axis.replace(regex=True, inplace=True, to_replace=r';', value=r'')
+    df['z_axis'] = df.z_axis.astype(np.float64)
+    df.dropna(axis=0, how='any', inplace=True)
+
+    # upload it to redis
+    i=min(df['user_id'])
+    while (i<=max(df['user_id'])):
+
+        df_user = df[df['user_id'] == i]
+        r.rpush(Topic["input_human_activity_app"], pickle.dumps(df_user))
+        i+=1
+
+    print("Uploading done!")
+
+    # publish it to trigger DBController
+    publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
+        "size": i,
+        "current":0,
+        "training":60,
+        "testing":10,
+        "threshold": float(MicroLambda["short_lambda"])
     })))
     GetResult()
+
+#waiting for result
 def GetResult():
     p = r.pubsub()
-    p.subscribe(Topic["result_face_app"])
+    p.subscribe(Topic["result_human_activity_app"])
     print("Waiting for Result: ")
     while True:
         message = p.get_message()
-        #print(message)
-        if message and message["data"]!=1:
-            print("Got output: "+str(json.loads(message["data"])))
+        # print(message)
+        if message and message["data"] != 1:
+            print("Got output: " + str(json.loads(message["data"])))
             break
 
+#user controller
 def UserInput():
-    arr=[]
-    input_size=10
-    for i in range(1,input_size+1):
-        arr.append(str(i)+".jpg")
-    print(arr)
+
+    #control parameters
+    Iteration=2
+    chunk_size = 1
+    input_dir='../Dataset/Human-Activity-Input/WISDM_ar_v1.1_raw.txt'
+    output_dir='../Results/CSV/Human-Activity-App/Execution_Time_Human_Activity_App.csv'
+    sleep_time=15
+
+    #user controller starts
     print("Hello User! I am MR. Packetized Computation! There is your option: ")
-    while(True):
-        Iteration=2
-        print("\n\n1. New data\n2. Exit")
-        d=input("Enter: ")
-        threshold=float(MicroLambda["short_lambda"])
-        if(d=="1"):
-            print("Number of Images: (Max number: "+str(input_size)+")")
-            l=input("Enter: ")
-            l=int(l)
-            if(l>input_size):
-                print("Invalid input!!! Try again")
-                continue
+    while (True):
+        print("\n\n1. Train Model\n2. Exit")
+        d = input("Enter: ")
+
+        threshold = float(MicroLambda["short_lambda"])
+
+        if (str(d) == "1"):
+            filename = input_dir
+            print("Loading Human Activity Data from Dataset: " + filename)
             for i in range(Iteration):
-                print("Taking Break for 15 sec!")
-                time.sleep(15)
-                print(Topic)
+
+                print("Taking Break for "+str(sleep_time)+" sec!")
+                time.sleep(sleep_time)
                 print("Cleaning Started!")
-                Cleaning(Topic["input_face_app"])
-                print("Taking Break for 15 sec!")
-                time.sleep(15)
-                print("Iteration: "+str(i)+", Computation started for image: "+str(l))
-                start=time.time()
-                load_images(arr[:l])
-                end=time.time()
-                print("time: "+str(end-start))
-                WriteCSV('../Results/CSV/Face-App/Execution_Time.csv',[[l,threshold,end-start]])
+                Cleaning(Topic["input_human_activity_app"])
+                CleaningModel(Topic["model_human_activity_app"])
+                print("Taking Break for "+str(sleep_time)+" sec!")
+
+                time.sleep(sleep_time)
+                start = time.time()
+                load_data(filename, chunk_size)
+                end = time.time()
+                print("time: " + str(end - start))
+                WriteCSV(output_dir, [[l, threshold, end - start]])
                 print("done!")
         else:
             break

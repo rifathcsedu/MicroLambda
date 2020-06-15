@@ -1,17 +1,25 @@
 import os
 import json
+import sys
+from RedisPubSub import *
+from AirPollution import *
 from math import sqrt
 from numpy import concatenate
-from matplotlib import pyplot
 from pandas import read_csv
 from pandas import DataFrame
 from pandas import concat
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import warnings
+#warnings.simplefilter(action='ignore', category=FutureWarning)
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
+
+import time
 
 def get_stdin():
     buf = ""
@@ -20,29 +28,72 @@ def get_stdin():
     return buf
 
 def handle (req):
+    start = time.time()
     print(req)
     json_req = json.loads(req)
+    print(json_req)
     current = json_req["current"]
-    i=current
     training_size=json_req["training"]
-    arr=[]
-    while(i<current+training_size):
-        temp=LoadData(Topic["input_air_pollution_app"], i, i)
-        if(i==current):
-            arr=pickle.loads(temp)
+    total_size=json_req["size"]
+    threshold=int(json_req["threshold"])
+
+    while(True):
+        time_diff=time.time()-start
+        publish_redis("test",str(time_diff))
+        if(time_diff>threshold or current>=total_size):
+            break
+        i = current
+        arr=[]
+        while(i<current+training_size and i<total_size):
+            temp=LoadData(Topic["input_air_pollution_app"], i, i)
+            if(i==current):
+                arr=pickle.loads(temp[0])
+            else:
+                arr=np.concatenate((arr,pickle.loads(temp[0])))
+
+            i+=1
+
+        current=i
+
+        n_train_hours=arr.shape[0]-24*int(json_req["training"]*0.2) # 20 percent data for testing
+        train = arr[:n_train_hours, :]
+        test = arr[n_train_hours:, :]
+        # split into input and outputs
+        train_X, train_y = train[:, :-1], train[:, -1]
+        test_X, test_y = test[:, :-1], test[:, -1]
+        train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+        test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
+        model = None
+        temp=RedisLoadModel(Topic["model_air_pollution_app"])
+
+        if (temp != None):
+            model = pickle.loads(temp)
+            publish_redis("test", "Model loading done!!!")
         else:
-            arr=np.concatenate((arr,pickle.loads(temp)))
-    print(arr.shape[0])
-    '''        
-    model = Sequential()
-    model.add(LSTM(50, input_shape=(train_X.shape[1], train_X.shape[2])))
-    model.add(Dense(1))
-    model.compile(loss='mae', optimizer='adam')
-    # fit network
-    history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2,
-                        shuffle=False)
+            model = Sequential()
+            model.add(LSTM(100, input_shape=(train_X.shape[1], train_X.shape[2])))
+            model.add(Dense(1))
+            publish_redis("test", "New Model created!!!")
+
+        model.compile(loss='mae', optimizer='adam')
+        #print("Model setting done and compile done!!!")
+        publish_redis("test", "Model setting done and compile done!!!")
+        # fit network
+        history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2,shuffle=False)
+        publish_redis("test", "Training done!!!")
+
+        #save model to redis
+        publish_redis("test", "Saving model starts...!!")
+
+        #model_weight=pickle.dumps()
+
+        RedisSaveModel(Topic['model_air_pollution_app'], pickle.dumps(model))
+        #print("Saving model done...!!")
+        publish_redis("test", "Saving model done...!!")
+        publish_redis("test", "Current is "+str(current))
+
+    publish_redis("test", json.dumps({"data":"done","current":current,"time":str(time.time()-start)}))
     return publish_redis(Topic["publish_air_pollution_app"],json.dumps({"size": json_req["size"],"current":json_req["current"]+json_req["training"],"training":json_req["training"],"testing":json_req["testing"],"threshold": float(json_req["threshold"])}))
-    '''
 
 #main function
 if __name__ == "__main__":

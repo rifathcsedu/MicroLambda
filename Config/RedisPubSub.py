@@ -5,6 +5,14 @@ redis_port = int(Database["port"])
 redis_password = Database["password"]
 r = redis.Redis(host=redis_host, port=redis_port)
 
+#save model
+def RedisSaveModel(topic,data):
+    r.hset(topic, topic+"1", data)
+
+#load model
+def RedisLoadModel(topic):
+    return r.hget(topic, topic+"1")
+
 #publish via redis
 def publish_redis(topic,data):
     r.publish(topic,data)
@@ -24,3 +32,6 @@ def Cleaning(topic):
         if (r.rpop(topic) == None):
             print("cleaning done")
             break
+def CleaningModel(topic):
+    r.hdel(topic,topic+"1")
+    print("model deleted!")

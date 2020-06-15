@@ -7,4 +7,12 @@ functions:
     lang: dockerfile
     handler: ./air-pollution-microlambda
     image: air-pollution-microlambda:latest
+    environment:
+      read_timeout: "5m" # Maximum time to read HTTP request
+      write_timeout: "5m" # Maximum time to write HTTP response
+      exec_timeout: "5m5s"
+    limits:
+      memory: 3000Mi
+    requests:
+      memory: 3000Mi
 

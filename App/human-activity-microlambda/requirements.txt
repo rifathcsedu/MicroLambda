@@ -1,0 +1,8 @@
+sklearn
+numpy
+scipy
+redis
+pandas
+Pillow
+
+tensorflow

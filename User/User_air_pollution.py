@@ -5,14 +5,18 @@ import time
 import csv
 import sys
 import os
+
 from sklearn import preprocessing
 from pandas import *
+
 sys.path.append('../Config/')
 sys.path.append('../Class/')
+
 from RedisPubSub import *
 from configuration import *
 from AirPollution import *
 
+#store metrics to CSV
 def WriteCSV(path, data):
     print("Writing output and metrics in CSV...")
     with open(path, 'a') as csvfile:
@@ -20,6 +24,7 @@ def WriteCSV(path, data):
         csvwriter.writerows(data)
     print("Writing Done!")
 
+#upload the data to Redis
 def load_data(filename, chunksize):
     pickle_data = []
     dataset = read_csv(filename, header=0, index_col=0)
@@ -49,6 +54,7 @@ def load_data(filename, chunksize):
     })))
     GetResult()
 
+#waiting for results
 def GetResult():
     p = r.pubsub()
     p.subscribe(Topic["result_air_pollution_app"])
@@ -60,35 +66,45 @@ def GetResult():
             print("Got output: " + str(json.loads(message["data"])))
             break
 
-
+#user controller
 def UserInput():
+
+    #control parameter
+    sleep_time=15
+    iteration=2
+    input_dir='../Dataset/Air-Pollution-Input/pollution.csv'
+    output_dir='../Results/CSV/Face-App/Execution_Time_Air_Pollution.csv'
+    chunk_size = 1
+
+    #user controller
     print("Hello User! I am MR. Packetized Computation! There is your option: ")
     while (True):
-        Iteration = 2
+
         print("\n\n1. Train Model\n2. Exit")
         d = input("Enter: ")
         threshold = float(MicroLambda["short_lambda"])
         if (str(d) == "1"):
-            filename = '../Dataset/Air-Pollution-Input/pollution.csv'
+            filename = input_dir
             print("Loading Pollution Data from Dataset: " + filename)
-            chunk_size = 1
+
             for i in range(Iteration):
-                print("Taking Break for 15 sec!")
-                time.sleep(15)
-                print(Topic)
+                print("Taking Break for "+str(sleep_time)+" sec!")
+                time.sleep(sleep_time)
+
                 print("Cleaning Started!")
                 Cleaning(Topic["input_air_pollution_app"])
-                print("Taking Break for 15 sec!")
-                time.sleep(15)
+                CleaningModel(Topic["model_air_pollution_app"])
+                print("Taking Break for "+str(sleep_time)+" sec!")
+
+                time.sleep(sleep_time)
                 start = time.time()
                 load_data(filename, chunk_size)
                 end = time.time()
                 print("time: " + str(end - start))
-                WriteCSV('../Results/CSV/Face-App/Execution_Time.csv', [[l, threshold, end - start]])
+                WriteCSV(output_dir, [[l, threshold, end - start]])
                 print("done!")
         else:
             break
-
 
 if __name__ == '__main__':
     UserInput()
