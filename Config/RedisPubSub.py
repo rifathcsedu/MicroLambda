@@ -1,4 +1,5 @@
 import redis
+import json
 from configuration import *
 redis_host = Database["host"]
 redis_port = int(Database["port"])
@@ -35,3 +36,15 @@ def Cleaning(topic):
 def CleaningModel(topic):
     r.hdel(topic,topic+"1")
     print("model deleted!")
+
+#waiting for results
+def GetResult(topic):
+    p = r.pubsub()
+    p.subscribe(topic)
+    print("Waiting for Result: ")
+    while True:
+        message = p.get_message()
+        # print(message)
+        if message and message["data"] != 1:
+            print("Got output: " + str(json.loads(message["data"])))
+            break

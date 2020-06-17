@@ -17,14 +17,6 @@ from RedisPubSub import *
 from configuration import *
 from AirPollution import *
 
-#store metrics to CSV
-def WriteCSV(path, data):
-    print("Writing output and metrics in CSV...")
-    with open(path, 'a') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerows(data)
-    print("Writing Done!")
-
 #upload the data to Redis
 def load_data(filename, chunksize):
     print("Data uploading started!!!")
@@ -43,28 +35,18 @@ def load_data(filename, chunksize):
         i+=1
 
     print("Uploading done!")
-
+    print(i)
     # publish it to trigger DBController
     publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
         "size": i,
+        'app':'human-app',
         "current":0,
-        "training":60,
+        "training":6,
         "testing":10,
         "threshold": float(MicroLambda["short_lambda"])
     })))
-    GetResult()
+    GetResult(Topic["result_human_activity_app"])
 
-#waiting for result
-def GetResult():
-    p = r.pubsub()
-    p.subscribe(Topic["result_human_activity_app"])
-    print("Waiting for Result: ")
-    while True:
-        message = p.get_message()
-        # print(message)
-        if message and message["data"] != 1:
-            print("Got output: " + str(json.loads(message["data"])))
-            break
 
 #user controller
 def UserInput():

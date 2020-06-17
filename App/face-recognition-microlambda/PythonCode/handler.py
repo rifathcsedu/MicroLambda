@@ -60,7 +60,9 @@ def handle(req):
         current.append(i)
     print(current)
 
-    return publish_redis(Topic["input_face_app"],json.dumps({"data": current, "threshold":json_req["threshold"],"size":json_req["size"]}))
+    json_req["data"]=current
+
+    return publish_redis(Topic["publish_face_app"],json.dumps(json_req))
 
 if __name__ == "__main__":
     st = get_stdin()

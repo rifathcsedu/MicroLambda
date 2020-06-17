@@ -1,1 +1,0 @@
-http://10.200.10.56:8080/function/face-recognition

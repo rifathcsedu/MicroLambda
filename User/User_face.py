@@ -20,14 +20,6 @@ sys.path.append('../Config/')
 from RedisPubSub import *
 from configuration import *
 
-#store the metrics to CSV
-def WriteCSV(path,data):
-    print("Writing output and metrics in CSV...")
-    with open(path, 'a') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerows(data)
-    print("Writing Done!")
-
 #upload images to redis
 def load_images(arr):
     input_dir="../Dataset/Face-Recognition-Input/"
@@ -37,24 +29,14 @@ def load_images(arr):
         data = {}
         known_image = face_recognition.load_image_file(input_dir+i)
         r.rpush(Topic["input_face_app"],pickle.dumps(known_image))
-    publish_redis(Topic["input_face_app"],str(json.dumps({
+
+    publish_redis(Topic["publish_face_app"],str(json.dumps({
         "data": [],
+        'app': 'face-app',
         "size": len(arr),
         "threshold":float(MicroLambda["short_lambda"])
     })))
-    GetResult()
-
-#waiting for results
-def GetResult():
-    p = r.pubsub()
-    p.subscribe(Topic["result_face_app"])
-    print("Waiting for Result: ")
-    while True:
-        message = p.get_message()
-        #print(message)
-        if message and message["data"]!=1:
-            print("Got output: "+str(json.loads(message["data"])))
-            break
+    GetResult(Topic["result_face_app"])
 
 #user controller
 def UserInput():

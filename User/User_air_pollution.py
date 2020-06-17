@@ -16,14 +16,6 @@ from RedisPubSub import *
 from configuration import *
 from AirPollution import *
 
-#store metrics to CSV
-def WriteCSV(path, data):
-    print("Writing output and metrics in CSV...")
-    with open(path, 'a') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerows(data)
-    print("Writing Done!")
-
 #upload the data to Redis
 def load_data(filename, chunksize):
     pickle_data = []
@@ -45,36 +37,24 @@ def load_data(filename, chunksize):
 
     # publish it to trigger DBController
     publish_redis(Topic["publish_air_pollution_app"], str(json.dumps({
-        "data": [],
+        'app':'pollution-app',
         "size": i,
         "current":0,
-        "training":60,
-        "testing":10,
+        "training":chunksize,
         "threshold": float(MicroLambda["short_lambda"])
     })))
-    GetResult()
+    GetResult(Topic["result_air_pollution_app"])
 
-#waiting for results
-def GetResult():
-    p = r.pubsub()
-    p.subscribe(Topic["result_air_pollution_app"])
-    print("Waiting for Result: ")
-    while True:
-        message = p.get_message()
-        # print(message)
-        if message and message["data"] != 1:
-            print("Got output: " + str(json.loads(message["data"])))
-            break
 
 #user controller
 def UserInput():
 
     #control parameter
     sleep_time=15
-    iteration=2
+    Iteration=1
     input_dir='../Dataset/Air-Pollution-Input/pollution.csv'
-    output_dir='../Results/CSV/Face-App/Execution_Time_Air_Pollution.csv'
-    chunk_size = 1
+    output_dir='../Results/CSV/Air-Pollution-App/Execution_Time_Air_Pollution.csv'
+    chunk_size = 365
 
     #user controller
     print("Hello User! I am MR. Packetized Computation! There is your option: ")
@@ -88,6 +68,7 @@ def UserInput():
             print("Loading Pollution Data from Dataset: " + filename)
 
             for i in range(Iteration):
+                print("Iteration "+str(i)+" begins!!!")
                 print("Taking Break for "+str(sleep_time)+" sec!")
                 time.sleep(sleep_time)
 
@@ -101,7 +82,7 @@ def UserInput():
                 load_data(filename, chunk_size)
                 end = time.time()
                 print("time: " + str(end - start))
-                WriteCSV(output_dir, [[l, threshold, end - start]])
+                WriteCSV(output_dir, [[chunk_size, threshold, end - start]])
                 print("done!")
         else:
             break

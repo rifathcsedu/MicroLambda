@@ -38,6 +38,7 @@ def handle (req):
     threshold=int(json_req["threshold"])
 
     while(True):
+        publish_redis("test", "new loop")
         time_diff=time.time()-start
         publish_redis("test",str(time_diff))
         if(time_diff>threshold or current>=total_size):
@@ -92,8 +93,9 @@ def handle (req):
         publish_redis("test", "Saving model done...!!")
         publish_redis("test", "Current is "+str(current))
 
+    json_req["current"]=current
     publish_redis("test", json.dumps({"data":"done","current":current,"time":str(time.time()-start)}))
-    return publish_redis(Topic["publish_air_pollution_app"],json.dumps({"size": json_req["size"],"current":json_req["current"]+json_req["training"],"training":json_req["training"],"testing":json_req["testing"],"threshold": float(json_req["threshold"])}))
+    return publish_redis(Topic["publish_air_pollution_app"],json.dumps(json_req))
 
 #main function
 if __name__ == "__main__":
