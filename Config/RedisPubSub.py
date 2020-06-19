@@ -48,3 +48,5 @@ def GetResult(topic):
         if message and message["data"] != 1:
             print("Got output: " + str(json.loads(message["data"])))
             break
+
+publish_redis("test",redis_host)

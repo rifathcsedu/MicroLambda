@@ -1,7 +1,10 @@
 import json
 import csv
+ip='192.168.0.102'
+Iteration=3
+sleep_time=5
 Database = dict(
-    host = '10.200.100.253',
+    host = '192.168.0.100',
     port = '6379',
     password='',
 )
@@ -26,9 +29,9 @@ MicroLambda=dict(
 )
 
 AppURL = dict(
-    face_app = 'http://10.200.87.202:8080/function/face-recognition-microlambda',
-    air_pollution_app = 'http://10.200.87.202:8080/function/air-pollution-microlambda',
-    human_activity_app='http://10.200.87.202:8080/function/human-activity-microlambda',
+    face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
+    air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
+    human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
 )
 
 #store metrics to CSV

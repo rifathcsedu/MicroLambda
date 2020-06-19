@@ -25,3 +25,4 @@ def Cleaning(topic):
         if (r.rpop(topic) == None):
             print("cleaning done")
             break
+publish_redis("test",redis_host)

@@ -42,7 +42,6 @@ def load_data(filename, chunksize):
         'app':'human-app',
         "current":0,
         "training":6,
-        "testing":10,
         "threshold": float(MicroLambda["short_lambda"])
     })))
     GetResult(Topic["result_human_activity_app"])
@@ -70,6 +69,7 @@ def UserInput():
             filename = input_dir
             print("Loading Human Activity Data from Dataset: " + filename)
             for i in range(Iteration):
+                print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
 
                 print("Taking Break for "+str(sleep_time)+" sec!")
                 time.sleep(sleep_time)

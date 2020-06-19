@@ -42,9 +42,7 @@ def load_images(arr):
 def UserInput():
 
     #control setting
-    sleep_time=15
     input_size=10
-    Iteration = 2
     output_file = '../Results/CSV/Face-App/Execution_Time_Face_Recognition_App.csv'
     # load input in a array
     arr = []
@@ -75,7 +73,7 @@ def UserInput():
                 Cleaning(Topic["input_face_app"])
                 print("Taking Break for "+str(sleep_time)+" sec!")
                 time.sleep(sleep_time)
-                print("Iteration: "+str(i)+", Computation started for image: "+str(l))
+                print("Iteration: "+str(i+1)+", Total Iteration "+str(Iteration)+" Computation started for image: "+str(l))
 
                 start=time.time()
                 load_images(arr[:l])

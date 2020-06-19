@@ -107,7 +107,7 @@ def subscribe_redis_pollution():
 #waiting for message to trigger
 def subscribe_redis_human():
     global terminate
-    p=PubSubSubscriber(Topic["input_human_activity_app"])
+    p=PubSubSubscriber(Topic["publish_human_activity_app"])
     print("Human Activity PubSub Controller Started...\nWaiting for input...")
     while terminate:
         message = p.get_message()

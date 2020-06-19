@@ -61,7 +61,7 @@ def handle(req):
     print(current)
 
     json_req["data"]=current
-
+    publish_redis("test",json.dumps("hello alubalu"))
     return publish_redis(Topic["publish_face_app"],json.dumps(json_req))
 
 if __name__ == "__main__":

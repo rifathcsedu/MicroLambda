@@ -68,7 +68,7 @@ def UserInput():
             print("Loading Pollution Data from Dataset: " + filename)
 
             for i in range(Iteration):
-                print("Iteration "+str(i)+" begins!!!")
+                print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
                 print("Taking Break for "+str(sleep_time)+" sec!")
                 time.sleep(sleep_time)
 

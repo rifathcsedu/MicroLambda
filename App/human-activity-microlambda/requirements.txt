@@ -1,5 +1,7 @@
 sklearn
 numpy
+h5py==2.10.0
+six>=1.12.0
 scipy
 redis
 pandas

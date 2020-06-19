@@ -35,3 +35,5 @@ def Cleaning(topic):
 def CleaningModel(topic):
     r.hdel(topic,topic+"1")
     print("model deleted!")
+
+publish_redis("test",redis_host)
