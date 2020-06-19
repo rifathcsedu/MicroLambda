@@ -65,6 +65,16 @@ def UserInput():
             if(l>input_size):
                 print("Invalid input!!! Try again")
                 continue
+
+            #wireshark and cpu monitor starts
+            publish_redis("MetricMonitor", str(json.dumps({
+                'app': 'face-app',
+                "type":'start',
+                "size": len(arr),
+                "threshold": float(MicroLambda["short_lambda"])
+            })))
+
+            #trial starts
             for i in range(Iteration):
                 print("Taking Break for "+str(sleep_time)+" sec!")
                 time.sleep(sleep_time)
@@ -82,6 +92,14 @@ def UserInput():
 
                 WriteCSV(output_file,[[l,threshold,end-start]])
                 print("done!")
+
+            #network and cpu monitoring ends
+            publish_redis("MetricMonitor", str(json.dumps({
+                'app': 'face-app',
+                "type": 'end',
+                "size": len(arr),
+                "threshold": float(MicroLambda["short_lambda"])
+            })))
         else:
             break
 

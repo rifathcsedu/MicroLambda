@@ -116,10 +116,10 @@ def subscribe_redis_human():
             url = AppURL["human_activity_app"]
             check = json.loads(message["data"])
             print(message["data"])
-            if (len(check["data"]) == 0):
+            if (check["current"] == 0):
                 start_time = time.time()
                 print(start_time)
-            if (len(check["data"]) != check["size"] - 1):
+            if (check["current"]!= check["size"]):
                 cmd = "curl " + url + " --data-binary " + json.dumps(message["data"].decode('utf8').replace("'", '"'))
                 print(cmd)
                 print(os.system(cmd))
