@@ -1,10 +1,10 @@
 import json
 import csv
 ip='192.168.0.102'
-Iteration=3
-sleep_time=5
+Iteration=100
+sleep_time=10
 Database = dict(
-    host = '192.168.0.100',
+    host = '192.168.0.103',
     port = '6379',
     password='',
 )
@@ -25,7 +25,7 @@ Topic = dict(
 
 MicroLambda=dict(
     long_lambda='1500',
-    short_lambda='1000'
+    short_lambda='15'
 )
 
 AppURL = dict(
