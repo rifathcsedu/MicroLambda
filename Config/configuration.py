@@ -1,7 +1,7 @@
 import json
 import csv
 ip='192.168.0.102'
-Iteration=100
+Iteration=1
 sleep_time=10
 Database = dict(
     host = '192.168.0.103',
@@ -25,7 +25,7 @@ Topic = dict(
 
 MicroLambda=dict(
     long_lambda='1500',
-    short_lambda='10'
+    short_lambda='1500'
 )
 
 AppURL = dict(
