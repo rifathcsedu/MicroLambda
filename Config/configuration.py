@@ -25,7 +25,7 @@ Topic = dict(
 
 MicroLambda=dict(
     long_lambda='1500',
-    short_lambda='15'
+    short_lambda='10'
 )
 
 AppURL = dict(
