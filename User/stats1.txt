@@ -1,0 +1,56 @@
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   22.20%              7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   22.20%              7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.00%               7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   9.95%               8.586MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          16
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   9.95%               8.586MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          16
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   13.35%              7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   13.35%              7.828MiB / 11.62GiB   0.07%               140MB / 3.73MB      181MB / 0B          11
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   37.53%              32.24MiB / 11.62GiB   0.27%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   37.53%              32.24MiB / 11.62GiB   0.27%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   96.30%              74.42MiB / 11.62GiB   0.63%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   96.30%              74.42MiB / 11.62GiB   0.63%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   89.98%              137.6MiB / 11.62GiB   1.16%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   89.98%              137.6MiB / 11.62GiB   1.16%               140MB / 3.73MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.48%               137.8MiB / 11.62GiB   1.16%               140MB / 3.74MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.48%               137.8MiB / 11.62GiB   1.16%               140MB / 3.74MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   1.39%               138.3MiB / 11.62GiB   1.16%               141MB / 3.74MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   1.39%               138.3MiB / 11.62GiB   1.16%               141MB / 3.74MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   18.62%              138.8MiB / 11.62GiB   1.17%               141MB / 3.75MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   18.62%              138.8MiB / 11.62GiB   1.17%               141MB / 3.75MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   1.70%               138.8MiB / 11.62GiB   1.17%               141MB / 3.76MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   1.70%               138.8MiB / 11.62GiB   1.17%               141MB / 3.76MB      181MB / 0B          12
+[2J[HCONTAINER ID        NAME                                                       CPU %               MEM USAGE / LIMIT   MEM %               NET I/O             BLOCK I/O           PIDS
+13ec80fd7927        face-recognition-microlambda.1.i1ebe7qzu6vg398j0ba06bk4w   0.77%               139MiB / 11.62GiB   1.17%               142MB / 3.76MB      181MB / 0B          12

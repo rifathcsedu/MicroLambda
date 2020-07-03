@@ -37,14 +37,14 @@ def load_data(filename, chunksize):
     print("Uploading done!")
     print(i)
     # publish it to trigger DBController
-    publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
-        "size": i,
-        'app':'human-app',
-        "current":0,
-        "training":6,
-        "threshold": float(MicroLambda["short_lambda"])
-    })))
-    GetResult(Topic["result_human_activity_app"])
+    # publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
+    #     "size": i,
+    #     'app':'human-app',
+    #     "current":0,
+    #     "training":6,
+    #     "threshold": float(MicroLambda["short_lambda"])
+    # })))
+    # GetResult(Topic["result_human_activity_app"])
 
 
 #user controller
@@ -81,10 +81,10 @@ def UserInput():
                 time.sleep(sleep_time)
                 start = time.time()
                 load_data(filename, chunk_size)
-                end = time.time()
-                print("time: " + str(end - start))
-                WriteCSV(output_dir, [[l, threshold, end - start]])
-                print("done!")
+                # end = time.time()
+                # print("time: " + str(end - start))
+                # WriteCSV(output_dir, [[l, threshold, end - start]])
+                # print("done!")
         else:
             break
 

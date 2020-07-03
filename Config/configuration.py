@@ -1,10 +1,10 @@
 import json
 import csv
 ip='192.168.0.102'
-Iteration=3
+Iteration=2
 sleep_time=5
 Database = dict(
-    host = '192.168.0.100',
+    host = '192.168.0.103',
     port = '6379',
     password='',
 )
