@@ -15,7 +15,7 @@ import face_recognition
 #sys path setting
 
 sys.path.append('../Config/')
-
+sys.stdin=open('input.txt', 'r')
 #user defined packages
 from RedisPubSub import *
 from configuration import *
@@ -70,7 +70,7 @@ def UserInput():
             publish_redis("MetricMonitor", str(json.dumps({
                 'app': 'face-app',
                 "type":'start',
-                "size": len(arr),
+                "size": l,
                 "threshold": float(MicroLambda["short_lambda"])
             })))
 
@@ -97,9 +97,11 @@ def UserInput():
             publish_redis("MetricMonitor", str(json.dumps({
                 'app': 'face-app',
                 "type": 'end',
-                "size": len(arr),
+                "size": l,
                 "threshold": float(MicroLambda["short_lambda"])
             })))
+            print("Taking "+ str(sleep_time*2)+" sec break for new input ")
+            time.sleep(sleep_time*2)
         else:
             break
 

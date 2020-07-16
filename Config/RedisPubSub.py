@@ -10,10 +10,16 @@ r = redis.Redis(host=redis_host, port=redis_port)
 def RedisSaveModel(topic,data):
     r.hset(topic, topic+"1", data)
 
+def RedisSaveValue(topic,data):
+    r.set(topic,data)
+
 #load model
 def RedisLoadModel(topic):
     return r.hget(topic, topic+"1")
 
+def RedisLoadValue(topic):
+    return r.get(topic)
+    
 #publish via redis
 def publish_redis(topic,data):
     r.publish(topic,data)

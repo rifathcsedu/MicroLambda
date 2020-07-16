@@ -1,18 +1,13 @@
-version: 1.0
-provider:
-  name: openfaas
-  gateway: http://192.168.0.102:8080/
 functions:
   human-activity-microlambda:
-    lang: dockerfile
+    environment:
+      exec_timeout: 10m5s
+      read_timeout: 10m
+      write_timeout: 10m
     handler: ./human-activity-microlambda
     image: human-activity-microlambda:latest
-    environment:
-      read_timeout: "5m" # Maximum time to read HTTP request
-      write_timeout: "5m" # Maximum time to write HTTP response
-      exec_timeout: "5m5s"
-    limits:
-      memory: 3000Mi
-    requests:
-      memory: 3000Mi
-
+    lang: dockerfile
+provider:
+  gateway: http://192.168.0.104:8080/
+  name: openfaas
+version: 1.0

@@ -8,7 +8,9 @@ Database = dict(
     port = '6379',
     password='',
 )
-
+Server=dict(
+    IPAddress='ServerIPAddress',
+)
 Topic = dict(
     publish_face_app = 'ImageStateStore',
     input_face_app='ImageInput',
@@ -25,7 +27,7 @@ Topic = dict(
 
 MicroLambda=dict(
     long_lambda='1500',
-    short_lambda='1000'
+    short_lambda='1500'
 )
 
 AppURL = dict(

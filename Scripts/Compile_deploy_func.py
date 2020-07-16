@@ -1,6 +1,17 @@
 import os
 import sys
 import glob
+from subprocess import check_output
+import yaml
+
+sys.path.append('../Config/')
+
+from RedisPubSub import *
+from configuration import *
+
+ipAddr = check_output(["hostname", "-I"])
+ipAddr=ipAddr.decode('utf-8').split(" ")
+print ('IP Address: ' + ipAddr[0] + "\n")
 
 #change directory and load all the functions
 os.chdir("../App/")
@@ -23,6 +34,16 @@ if os.system(cmd) == 0:
     print(CRED+"\nRemoved previous deployed version successfully\n"+CEND)
 else:
     print("Remove failed")
+
+with open(str(filelist[int(choice)-1])) as f:
+    doc = yaml.load(f,Loader=yaml.FullLoader)
+
+doc['provider']['gateway'] = 'http://'+ipAddr[0]+':8080/'
+
+with open(str(filelist[int(choice)-1]), 'w') as f:
+    yaml.dump(doc, f)
+
+RedisSaveValue(Server['IPAddress'],ipAddr[0])
 
 #build and deploy
 cmd="faas-cli build -f ./"+str(filelist[int(choice)-1])

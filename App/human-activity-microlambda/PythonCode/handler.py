@@ -43,6 +43,7 @@ def handle (req):
     testing_size = int(training_size * 0.2)
     threshold=int(json_req["threshold"])
     size=int(json_req["size"])
+    epoch=int(json_req["epoch"])
     while(time.time()-start<threshold and current<size):
         publish_redis("test", "New loop!!! current= "+str(current))
         arr=[]
@@ -130,7 +131,7 @@ def handle (req):
         # fit network
         history = model.fit(
             X_train, y_train,
-            epochs=2,
+            epochs=epoch,
             batch_size=64,
             validation_split=0.1,
             shuffle=True
@@ -147,8 +148,9 @@ def handle (req):
         #print("Saving model done...!!")
         publish_redis("test", "Saving model done...!!")
 
+    json_req["current"]=current
     publish_redis("test", json.dumps({"data":"done"}))
-    return publish_redis(Topic["publish_human_activity_app"],json.dumps({"size": json_req["size"],"current":current,"training":json_req["training"],"threshold": float(json_req["threshold"])}))
+    return publish_redis(Topic["publish_human_activity_app"],json.dumps(json_req))
 
 if __name__ == "__main__":
     st = get_stdin()
