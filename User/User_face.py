@@ -30,13 +30,7 @@ def load_images(arr):
         known_image = face_recognition.load_image_file(input_dir+i)
         r.rpush(Topic["input_face_app"],pickle.dumps(known_image))
 
-    publish_redis(Topic["publish_face_app"],str(json.dumps({
-        "data": [],
-        'app': 'face-app',
-        "size": len(arr),
-        "threshold":float(MicroLambda["short_lambda"])
-    })))
-    GetResult(Topic["result_face_app"])
+
 
 #user controller
 def UserInput():
@@ -55,7 +49,7 @@ def UserInput():
         print("\n\n1. New data\n2. Exit")
         d=input("Enter: ")
 
-        threshold=float(MicroLambda["short_lambda"])
+        #threshold=float(MicroLambda["short_lambda"])
 
         if(d=="1"):
             print("Number of Images: (Max number: "+str(input_size)+")")
@@ -66,42 +60,57 @@ def UserInput():
                 print("Invalid input!!! Try again")
                 continue
 
-            #wireshark and cpu monitor starts
-            publish_redis("MetricMonitor", str(json.dumps({
-                'app': 'face-app',
-                "type":'start',
-                "size": l,
-                "threshold": float(MicroLambda["short_lambda"])
-            })))
+            print("Cleaning Started!")
+            Cleaning(Topic["input_face_app"])
+            print("Taking Break for " + str(sleep_time) + " sec!")
 
-            #trial starts
-            for i in range(Iteration):
-                print("Taking Break for "+str(sleep_time)+" sec!")
-                time.sleep(sleep_time)
+            time.sleep(sleep_time)
 
-                print("Cleaning Started!")
-                Cleaning(Topic["input_face_app"])
-                print("Taking Break for "+str(sleep_time)+" sec!")
-                time.sleep(sleep_time)
-                print("Iteration: "+str(i+1)+", Total Iteration "+str(Iteration)+" Computation started for image: "+str(l))
+            start = time.time()
+            load_images(arr[:l])
+            upload_time = time.time() - start
+            data=[]
+            for threshold in MicroLambda["short_lambda"]:
+                # wireshark and cpu monitor starts
+                publish_redis("MetricMonitor", str(json.dumps({
+                    'app': 'face-app',
+                    "type": 'start',
+                    "size": l,
+                    "threshold": float(threshold)
+                })))
 
-                start=time.time()
-                load_images(arr[:l])
-                end=time.time()
-                print("time: "+str(end-start))
+                #trial starts
+                for i in range(Iteration):
+                    print("Taking Break for "+str(sleep_time)+" sec!")
+                    time.sleep(sleep_time)
 
-                WriteCSV(output_file,[[l,threshold,end-start]])
-                print("done!")
+                    print("Iteration: "+str(i+1)+", Total Iteration "+str(Iteration)+" Computation started for image: "+str(l))
+                    print("Uploading time: "+str(upload_time))
+                    start=time.time()
+                    publish_redis(Topic["publish_face_app"], str(json.dumps({
+                        "data": [],
+                        'app': 'face-app',
+                        "size": l,
+                        "threshold": float(threshold)
+                    })))
+                    GetResult(Topic["result_face_app"])
+                    end=time.time()
+                    print("time: "+str(end-start+upload_time))
+                    data.append([l,threshold,end-start+upload_time])
+                    #WriteCSV(output_file,[[l,threshold,end-start+upload_time]])
+                    print("done!")
 
-            #network and cpu monitoring ends
-            publish_redis("MetricMonitor", str(json.dumps({
-                'app': 'face-app',
-                "type": 'end',
-                "size": l,
-                "threshold": float(MicroLambda["short_lambda"])
-            })))
-            print("Taking "+ str(sleep_time*2)+" sec break for new input ")
-            time.sleep(sleep_time*2)
+                #network and cpu monitoring ends
+                publish_redis("MetricMonitor", str(json.dumps({
+                    'app': 'face-app',
+                    "type": 'end',
+                    "size": l,
+                    "threshold": float(threshold)
+                })))
+
+                print("Taking "+ str(sleep_time*2)+" sec break for new input ")
+                time.sleep(sleep_time*2)
+            WriteCSV(output_file,data)
         else:
             break
 
