@@ -16,8 +16,7 @@ from FaceRecognition import *
 terminate=True
 
 def pollution_app_controller():
-    url = RedisLoadValue(Server["IPAddress"])
-    print("Server ip is: "+url)
+    url = AppURL["face_app"]
 
     check = json.loads(message["data"])
     if (len(check["data"]) == 0):
@@ -108,6 +107,7 @@ def subscribe_redis_pollution():
 #waiting for message to trigger
 def subscribe_redis_human():
     global terminate
+    start_time=None
     p=PubSubSubscriber(Topic["publish_human_activity_app"])
     print("Human Activity PubSub Controller Started...\nWaiting for input...")
     while terminate:
@@ -116,10 +116,11 @@ def subscribe_redis_human():
             print(message)
             url = AppURL["human_activity_app"]
             check = json.loads(message["data"])
-            print(message["data"])
-            if (check["current"] == 0):
+            print(check)
+            print(check["current"])
+            if (check["current"] == 1):
                 start_time = time.time()
-                print(start_time)
+                print("Start Time "+str(start_time))
             if (check["current"]!= check["size"]):
                 cmd = "curl " + url + " --data-binary " + json.dumps(message["data"].decode('utf8').replace("'", '"'))
                 print(cmd)
