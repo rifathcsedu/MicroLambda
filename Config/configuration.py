@@ -40,3 +40,40 @@ def WriteCSV(path, data):
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(data)
     print("Writing Done!")
+
+
+
+
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def RepresentsFloat(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def ReadCSV(path):
+    data=[]
+    with open(path, 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        #fields = csvreader.next()
+
+        for row_data in csvreader:
+            temp = []
+            for item in row_data:
+                if(RepresentsInt(item)):
+                    new_item=int(item)
+                elif(RepresentsFloat(item)):
+                    new_item=float(item)
+                else:
+                    new_item=item
+                temp.append(new_item)
+            data.append(temp)
+    return data
