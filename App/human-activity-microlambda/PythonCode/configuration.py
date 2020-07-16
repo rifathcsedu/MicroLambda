@@ -1,6 +1,6 @@
 import json
 import csv
-from RedisPubSub import *
+
 
 Iteration=2
 sleep_time=5
@@ -10,7 +10,7 @@ Server=dict(
     DBServer='DBIPAddress'
 )
 Database = dict(
-    host = RedisLoadValue(Server["DBServer"]),
+    host = '192.168.0.107',
     port = '6379',
     password='',
 )
@@ -27,17 +27,12 @@ Topic = dict(
     result_air_pollution_app='ResultPollutionApp',
     model_air_pollution_app='ModelPollutionApp',
 )
-ip=RedisLoadValue(Server["IPAddress"])
+
 MicroLambda=dict(
     long_lambda='1500',
     short_lambda='1500'
 )
 
-AppURL = dict(
-    face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
-    air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
-    human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
-)
 
 #store metrics to CSV
 def WriteCSV(path, data):

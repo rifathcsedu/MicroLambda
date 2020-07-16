@@ -45,6 +45,14 @@ with open(str(filelist[int(choice)-1]), 'w') as f:
 
 RedisSaveValue(Server['IPAddress'],ipAddr[0])
 
+print("Copying config files...")
+f=str(filelist[int(choice)-1])
+f=f.replace(".yml","")
+print(f)
+os.system("rm ../App/"+f+"/PythonCode/configuration.py")
+os.system("rm ../App/"+f+"/PythonCode/RedisPubSub.py")
+os.system("cp ../Config/*.py ../App/"+f+"/PythonCode/")
+print("Copying Done!!!")
 
 #build and deploy
 cmd="faas-cli build -f ./"+str(filelist[int(choice)-1])

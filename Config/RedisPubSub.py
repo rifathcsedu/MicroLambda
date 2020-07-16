@@ -1,6 +1,8 @@
 import redis
 import json
+
 from configuration import *
+
 redis_host = Database["host"]
 redis_port = int(Database["port"])
 redis_password = Database["password"]
@@ -19,7 +21,15 @@ def RedisLoadModel(topic):
 
 def RedisLoadValue(topic):
     return r.get(topic)
-    
+
+ip=RedisLoadValue("ServerIPAddress").decode('utf-8')
+
+AppURL = dict(
+    face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
+    air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
+    human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
+)
+
 #publish via redis
 def publish_redis(topic,data):
     r.publish(topic,data)
