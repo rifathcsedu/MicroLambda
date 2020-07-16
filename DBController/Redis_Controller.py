@@ -16,7 +16,8 @@ from FaceRecognition import *
 terminate=True
 
 def pollution_app_controller():
-    url = AppURL["face_app"]
+    url = RedisLoadValue(Server["IPAddress"])
+    print("Server ip is: "+url)
 
     check = json.loads(message["data"])
     if (len(check["data"]) == 0):
@@ -153,4 +154,3 @@ if __name__ == '__main__':
         #human_thread.terminate()
         human_thread.join()
         print("Process killing done!!")
-
