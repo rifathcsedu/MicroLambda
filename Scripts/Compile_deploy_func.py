@@ -45,6 +45,7 @@ with open(str(filelist[int(choice)-1]), 'w') as f:
 
 RedisSaveValue(Server['IPAddress'],ipAddr[0])
 
+
 #build and deploy
 cmd="faas-cli build -f ./"+str(filelist[int(choice)-1])
 print(cmd)

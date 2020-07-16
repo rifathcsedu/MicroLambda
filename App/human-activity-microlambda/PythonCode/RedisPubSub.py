@@ -1,4 +1,5 @@
 import redis
+import json
 from configuration import *
 redis_host = Database["host"]
 redis_port = int(Database["port"])
@@ -9,9 +10,15 @@ r = redis.Redis(host=redis_host, port=redis_port)
 def RedisSaveModel(topic,data):
     r.hset(topic, topic+"1", data)
 
+def RedisSaveValue(topic,data):
+    r.set(topic,data)
+
 #load model
 def RedisLoadModel(topic):
     return r.hget(topic, topic+"1")
+
+def RedisLoadValue(topic):
+    return r.get(topic)
 
 #publish via redis
 def publish_redis(topic,data):
@@ -35,4 +42,17 @@ def Cleaning(topic):
 def CleaningModel(topic):
     r.hdel(topic,topic+"1")
     print("model deleted!")
+
+#waiting for results
+def GetResult(topic):
+    p = r.pubsub()
+    p.subscribe(topic)
+    print("Waiting for Result: ")
+    while True:
+        message = p.get_message()
+        # print(message)
+        if message and message["data"] != 1:
+            print("Got output: " + str(json.loads(message["data"])))
+            break
+
 publish_redis("test",redis_host)

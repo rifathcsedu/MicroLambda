@@ -1,12 +1,19 @@
 import json
 import csv
-ip='192.168.0.102'
+from RedisPubSub import *
+
+Iteration=2
+sleep_time=5
+
+Server=dict(
+    IPAddress='ServerIPAddress',
+    DBServer='DBIPAddress'
+)
 Database = dict(
-    host = '192.168.0.103',
+    host = RedisLoadValue(Server["DBServer"]),
     port = '6379',
     password='',
 )
-
 Topic = dict(
     publish_face_app = 'ImageStateStore',
     input_face_app='ImageInput',
@@ -20,10 +27,10 @@ Topic = dict(
     result_air_pollution_app='ResultPollutionApp',
     model_air_pollution_app='ModelPollutionApp',
 )
-
+ip=RedisLoadValue(Server["IPAddress"])
 MicroLambda=dict(
     long_lambda='1500',
-    short_lambda='1000'
+    short_lambda='1500'
 )
 
 AppURL = dict(
