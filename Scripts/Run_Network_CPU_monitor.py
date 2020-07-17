@@ -66,7 +66,7 @@ def subscribe_redis_monitor_app():
                     proc.terminate()
                     print("Threading done. Saving the log data!!!!")
 
-            elif(check["APP"]=='Air'):
+            elif(check["APP"]=='air-pollution-app'):
                 if (check["type"] == "start"):
                     print("Monitoring Air Pollution App starts...")
                     filename = "Network_size" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
@@ -86,11 +86,11 @@ def subscribe_redis_monitor_app():
                     print("Wireshark closed!!!")
                     proc.terminate()
                     print("Threading done. Saving the log data!!!!")
-            elif (check["APP"] == 'Human'):
+            elif (check["APP"] == 'human-activity-app'):
                 if (check["type"] == "start"):
                     print("Monitoring Human Activity App starts...")
-                    filename = "Human_Network_size" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
-                    cmd = "sudo tshark -i wlo1 -w ../Results/PCAP/Human-Activity/" + filename + " &"
+                    filename = "Human_Network_epoch" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
+                    cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Human-Activity/" + filename + " &"
                     os.system(cmd)
                     filename_net = "../Results/CSV/Human-Activity-App/CPU_MEM/Human_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
                     os.system("sudo rm " + filename_net)

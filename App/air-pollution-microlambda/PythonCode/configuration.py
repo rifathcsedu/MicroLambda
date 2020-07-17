@@ -1,6 +1,6 @@
 import json
 import csv
-from RedisPubSub import *
+
 
 Iteration=2
 sleep_time=5
@@ -10,7 +10,7 @@ Server=dict(
     DBServer='DBIPAddress'
 )
 Database = dict(
-    host = RedisLoadValue(Server["DBServer"]),
+    host = '192.168.0.107',
     port = '6379',
     password='',
 )
@@ -27,17 +27,11 @@ Topic = dict(
     result_air_pollution_app='ResultPollutionApp',
     model_air_pollution_app='ModelPollutionApp',
 )
-ip=RedisLoadValue(Server["IPAddress"])
+
 MicroLambda=dict(
-    long_lambda='1500',
-    short_lambda='1500'
+    short_lambda=['1500']
 )
 
-AppURL = dict(
-    face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
-    air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
-    human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
-)
 
 #store metrics to CSV
 def WriteCSV(path, data):
@@ -46,3 +40,40 @@ def WriteCSV(path, data):
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(data)
     print("Writing Done!")
+
+
+
+
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def RepresentsFloat(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def ReadCSV(path):
+    data=[]
+    with open(path, 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        #fields = csvreader.next()
+
+        for row_data in csvreader:
+            temp = []
+            for item in row_data:
+                if(RepresentsInt(item)):
+                    new_item=int(item)
+                elif(RepresentsFloat(item)):
+                    new_item=float(item)
+                else:
+                    new_item=item
+                temp.append(new_item)
+            data.append(temp)
+    return data
