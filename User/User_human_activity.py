@@ -50,26 +50,31 @@ def load_data(filename, chunksize):
     print("Uploading done!")
     print(i)
 
-def Testing(current,training_size,testing_size):
+def Testing(current,training_size,size):
     print("Testing Starts")
     arr=[]
-    arr_backup=[]
     i=current
-    while(i<current+training_size):
+    while(i<=training_size):
         temp=LoadData(Topic["input_human_activity_app"], i, i)
         print(pickle.loads(temp[0]))
         if(i==current):
             arr=pickle.loads(temp[0])
         else:
             arr=pd.concat([arr,pickle.loads(temp[0])])
-            if(current+training_size-i==testing_size):
-                arr_backup=pickle.loads(temp[0])
-            if(current+training_size-i<testing_size):
-                arr_backup=pd.concat([arr_backup,pickle.loads(temp[0])])
-        print(arr.size)
         i+=1
     df_train = arr
-    df_test=arr_backup
+    arr=[]
+    while(i<size):
+
+        temp=LoadData(Topic["input_human_activity_app"], i, i)
+        #print(pickle.loads(temp[0]))
+        print(i)
+        if(i==training_size+1):
+            arr=pickle.loads(temp[0])
+        else:
+            arr=pd.concat([arr,pickle.loads(temp[0])])
+        i+=1
+    df_test=arr
     print(df_train)
     print(df_test)
     scale_columns = ['x_axis', 'y_axis', 'z_axis']
@@ -130,7 +135,7 @@ def Testing(current,training_size,testing_size):
     print("Model setting done and compile done!!!")
     print("Testing Done!!!")
     return model.evaluate(X_test,y_test)
-    y_pred=model.predict(X_test)
+    #y_pred=model.predict(X_test)
     #print(y_pred)
 
 
@@ -164,35 +169,48 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            l = 20
-            for threshold in MicroLambda["short_lambda"]:
-                data=[]
-                print("threshold: "+str(threshold))
-                for i in range(Iteration):
-                    print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
-                    print("Taking Break for "+str(sleep_time)+" sec!")
-                    time.sleep(sleep_time)
-                    print("Cleaning Model Started!")
-                    CleaningModel(Topic["model_human_activity_app"])
-                    print("Taking Break for "+str(sleep_time)+" sec!")
-                    time.sleep(sleep_time)
-                    start = time.time()
-                    # publish it to trigger DBController
-                    publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
-                        "size": max_data-testing_size,
-                        'app':'human-app',
-                        "current":1,
-                        "training":10,
-                        "epoch":int(l),
-                        "threshold": int(threshold)
+            epoch_list=[10,20,30,40]
+            for l in epoch_list:
+                for threshold in MicroLambda["short_lambda"]:
+                    data=[]
+                    print("threshold: "+str(threshold))
+                    publish_redis("MetricMonitor", str(json.dumps({
+                        'app': 'face-app',
+                        "type": 'start',
+                        "size": l,
+                        "threshold": float(threshold)
                     })))
-                    GetResult(Topic["result_human_activity_app"])
-                    end = time.time()
-                    print("time: " + str(end - start))
-                    acc=Testing(testing_size)
-                    data.append([threshold,acc[1],acc[0],end-start+upload_time])
-                    print("done!")
-            WriteCSV(output_dir, data)
+                    for i in range(Iteration):
+                        print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
+                        print("Taking Break for "+str(sleep_time)+" sec!")
+                        time.sleep(sleep_time)
+                        print("Cleaning Model Started!")
+                        CleaningModel(Topic["model_human_activity_app"])
+                        print("Taking Break for "+str(sleep_time)+" sec!")
+                        time.sleep(sleep_time)
+                        start = time.time()
+                        # publish it to trigger DBController
+                        publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
+                            "size": max_data-testing_size+1,
+                            'app':'human-app',
+                            "current":1,
+                            "training":10,
+                            "epoch":int(l),
+                            "threshold": int(threshold)
+                        })))
+                        GetResult(Topic["result_human_activity_app"])
+                        end = time.time()
+                        print("time: " + str(end - start))
+                        acc=Testing(1,30,max_data)
+                        data.append([threshold,l,acc[1],acc[0],end-start+upload_time])
+                        print("done!")
+                    publish_redis("MetricMonitor", str(json.dumps({
+                        'app': 'face-app',
+                        "type": 'end',
+                        "size": l,
+                        "threshold": float(threshold)
+                    })))
+                WriteCSV(output_dir, data)
         else:
             break
 
