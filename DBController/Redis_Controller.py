@@ -80,6 +80,7 @@ def subscribe_redis_face():
 #waiting for message to trigger
 def subscribe_redis_pollution():
     global terminate
+    start_time=None
     p=PubSubSubscriber(Topic["publish_air_pollution_app"])
     print("Air Pollution PubSub Controller Started...\nWaiting for input...")
     while terminate:
@@ -121,7 +122,7 @@ def subscribe_redis_human():
             if (check["current"] == 1):
                 start_time = time.time()
                 print("Start Time "+str(start_time))
-            if (check["current"]!= check["size"]):
+            if (check["current"]< check["size"]):
                 cmd = "curl " + url + " --data-binary " + json.dumps(message["data"].decode('utf8').replace("'", '"'))
                 print(cmd)
                 print(os.system(cmd))
