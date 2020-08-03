@@ -169,19 +169,21 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[10,20,30,40]
+            epoch_list=[20]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
-                    data=[]
+
                     print("threshold: "+str(threshold))
                     publish_redis("MetricMonitor", str(json.dumps({
-                        'app': 'face-app',
+                        'app': 'human-activity-app',
                         "type": 'start',
                         "size": l,
                         "threshold": float(threshold)
                     })))
                     for i in range(Iteration):
+                        data=[]
                         print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
+                        time.sleep(5)
                         print("Taking Break for "+str(sleep_time)+" sec!")
                         time.sleep(sleep_time)
                         print("Cleaning Model Started!")
@@ -190,11 +192,16 @@ def UserInput():
                         time.sleep(sleep_time)
                         start = time.time()
                         # publish it to trigger DBController
+                        train=0
+                        if(threshold=='1500'):
+                            train=30
+                        else:
+                            train=10
                         publish_redis(Topic["publish_human_activity_app"], str(json.dumps({
                             "size": max_data-testing_size+1,
-                            'app':'human-app',
+                            'app':'human-activity-app',
                             "current":1,
-                            "training":10,
+                            "training":train,
                             "epoch":int(l),
                             "threshold": int(threshold)
                         })))
@@ -203,14 +210,16 @@ def UserInput():
                         print("time: " + str(end - start))
                         acc=Testing(1,30,max_data)
                         data.append([threshold,l,acc[1],acc[0],end-start+upload_time])
+                        WriteCSV(output_dir, data)
                         print("done!")
+
                     publish_redis("MetricMonitor", str(json.dumps({
-                        'app': 'face-app',
+                        'app': 'human-activity-app',
                         "type": 'end',
                         "size": l,
                         "threshold": float(threshold)
                     })))
-                WriteCSV(output_dir, data)
+
         else:
             break
 
