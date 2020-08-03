@@ -2,7 +2,7 @@ import json
 import csv
 
 
-Iteration=2
+Iteration=50
 sleep_time=5
 
 Server=dict(
@@ -29,7 +29,9 @@ Topic = dict(
 )
 
 MicroLambda=dict(
-    short_lambda=['1500']
+    short_lambda=['300']
+    #short_lambda=['1500','420','360','300']
+
 )
 
 

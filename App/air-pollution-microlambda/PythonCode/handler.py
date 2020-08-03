@@ -47,6 +47,7 @@ def handle (req):
         arr=[]
         while(i<current+training_size and i<total_size):
             temp=LoadData(Topic["input_air_pollution_app"], i, i)
+            publish_redis("test","i="+str(i))
             if(i==current):
                 arr=pickle.loads(temp[0])
             else:
@@ -55,7 +56,7 @@ def handle (req):
             i+=1
 
         current=i
-
+        publish_redis("test","current= "+str(current))
         n_train_hours=arr.shape[0]-24*int(json_req["training"]*0.2) # 20 percent data for testing
         train = arr[:n_train_hours, :]
         test = arr[n_train_hours:, :]
@@ -65,15 +66,16 @@ def handle (req):
         train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
         test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
         model = None
+        model = Sequential()
+        model.add(LSTM(100, input_shape=(train_X.shape[1], train_X.shape[2])))
+        model.add(Dense(1))
         temp=RedisLoadModel(Topic["model_air_pollution_app"])
 
         if (temp != None):
-            model = pickle.loads(temp)
+            json_data = pickle.loads(temp)
+            model.set_weights(json_data)
             publish_redis("test", "Model loading done!!!")
         else:
-            model = Sequential()
-            model.add(LSTM(100, input_shape=(train_X.shape[1], train_X.shape[2])))
-            model.add(Dense(1))
             publish_redis("test", "New Model created!!!")
 
         model.compile(loss='mae', optimizer='adam')
@@ -88,7 +90,7 @@ def handle (req):
 
         #model_weight=pickle.dumps()
 
-        RedisSaveModel(Topic['model_air_pollution_app'], pickle.dumps(model))
+        RedisSaveModel(Topic['model_air_pollution_app'], pickle.dumps(model.get_weights()))
         #print("Saving model done...!!")
         publish_redis("test", "Saving model done...!!")
         publish_redis("test", "Current is "+str(current))

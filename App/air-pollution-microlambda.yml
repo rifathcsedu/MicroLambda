@@ -1,16 +1,12 @@
 functions:
   air-pollution-microlambda:
     environment:
-      exec_timeout: 5m5s
-      read_timeout: 5m
-      write_timeout: 5m
+      exec_timeout: 10m5s
+      read_timeout: 10m
+      write_timeout: 10m
     handler: ./air-pollution-microlambda
     image: air-pollution-microlambda:latest
     lang: dockerfile
-    limits:
-      memory: 3000Mi
-    requests:
-      memory: 3000Mi
 provider:
   gateway: http://192.168.0.104:8080/
   name: openfaas

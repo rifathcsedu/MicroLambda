@@ -49,7 +49,7 @@ def subscribe_redis_monitor_app():
                 if(check["type"]=="start"):
                     print("Monitoring Face App starts...")
                     filename="Face_Network_size"+str(check["size"])+"_threshold_"+str(check["threshold"])+".pcap"
-                    cmd="sudo tshark -i wlo1 -w ../Results/PCAP/Face-App/"+filename+" &"
+                    cmd="sudo tshark -i enp1s0 -w ../Results/PCAP/Face-App/"+filename+" &"
                     os.system(cmd)
 
                     filename_net = "../Results/CSV/Face-App/CPU_MEM/Face_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
@@ -66,11 +66,11 @@ def subscribe_redis_monitor_app():
                     proc.terminate()
                     print("Threading done. Saving the log data!!!!")
 
-            elif(check["APP"]=='air-pollution-app'):
+            elif(check["app"]=='pollution-app'):
                 if (check["type"] == "start"):
                     print("Monitoring Air Pollution App starts...")
                     filename = "Network_size" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
-                    cmd = "sudo tshark -i wlo1 -w ../Results/PCAP/Air-Pollution/" + filename + " &"
+                    cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Air-Pollution/" + filename + " &"
                     os.system(cmd)
                     filename_net = "../Results/CSV/Air-Pollution-App/CPU_MEM/CPU_Memory" + str(
                         check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
@@ -86,13 +86,14 @@ def subscribe_redis_monitor_app():
                     print("Wireshark closed!!!")
                     proc.terminate()
                     print("Threading done. Saving the log data!!!!")
-            elif (check["APP"] == 'human-activity-app'):
+            elif (check["app"] == 'human-activity-app'):
                 if (check["type"] == "start"):
                     print("Monitoring Human Activity App starts...")
                     filename = "Human_Network_epoch" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
-                    cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Human-Activity/" + filename + " &"
+                    cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Human-Activity-App/" + filename + " &"
                     os.system(cmd)
-                    filename_net = "../Results/CSV/Human-Activity-App/CPU_MEM/Human_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
+                    os.system("pwd")
+                    filename_net = "../Results/CSV/Human-Activity-App/CPU-MEM/Human_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
                     os.system("sudo rm " + filename_net)
                     cmd = "docker container stats " + human_app_container + "  --format  \"start,{{ .CPUPerc }},{{.MemPerc}},end\"  | tee --append " + filename_net
                     print(cmd)
