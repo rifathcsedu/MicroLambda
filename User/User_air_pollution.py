@@ -97,7 +97,7 @@ def Testing(current,training_size,size):
     test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
     model = None
     model = Sequential()
-    model.add(LSTM(100, input_shape=(train_X.shape[1], train_X.shape[2])))
+    model.add(LSTM(150, input_shape=(train_X.shape[1], train_X.shape[2])))
     model.add(Dense(1))
     dataset = read_csv(input_dir, header=0, index_col=0)
     values = dataset.values
@@ -162,7 +162,8 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[25,50]
+            #epoch_list=[25,50,100,150,200,250,300]
+            epoch_list=[300]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
                     print("threshold: "+str(threshold))
@@ -174,6 +175,8 @@ def UserInput():
                     })))
                     for i in range(Iteration):
                         data=[]
+                        batch_size=73
+                        neoron=150
                         print("Iteration: " + str(i + 1) + ", Total Iteration " + str(Iteration))
                         time.sleep(5)
                         print("Taking Break for "+str(sleep_time)+" sec!")
@@ -195,6 +198,8 @@ def UserInput():
                             "current":0,
                             "training":train,
                             "epoch":int(l),
+                            "batch":int(batch_size),
+                            "neoron":int(neoron),
                             "threshold": int(threshold)
                         })))
                         GetResult(Topic["result_air_pollution_app"])
