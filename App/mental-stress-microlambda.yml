@@ -1,0 +1,13 @@
+functions:
+  mental-stress-microlambda:
+    environment:
+      exec_timeout: 10m5s
+      read_timeout: 10m
+      write_timeout: 10m
+    handler: ./mental-stress-microlambda
+    image: mental-stress-microlambda:latest
+    lang: dockerfile
+provider:
+  gateway: http://192.168.0.104:8080/
+  name: openfaas
+version: 1.0

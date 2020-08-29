@@ -69,14 +69,14 @@ def subscribe_redis_monitor_app():
             elif(check["app"]=='pollution-app'):
                 if (check["type"] == "start"):
                     print("Monitoring Air Pollution App starts...")
-                    filename = "Network_size" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
+                    filename = "Air_Network_size" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
                     cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Air-Pollution/" + filename + " &"
                     os.system(cmd)
-                    filename_net = "../Results/CSV/Air-Pollution-App/CPU_MEM/CPU_Memory" + str(
-                        check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
+                    filename_net = "../Results/CSV/Air-Pollution-App/CPU-MEM/Air_CPU_Memory" + str(check["size"]) + "_threshold_" + str(int(check["threshold"])) + ".csv"
                     os.system("sudo rm " + filename_net)
                     cmd = "docker container stats " + air_app_container + "  --format  \"start,{{ .CPUPerc }},{{.MemPerc}},end\"  | tee --append " + filename_net
                     print(cmd)
+                    print("CPU data measuring starts...")
                     proc = multiprocessing.Process(target=threading_CPU_MEM, args=(cmd, ))
                     proc.start()
                 elif (check["type"] == "end"):

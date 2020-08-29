@@ -20,3 +20,8 @@ os.system(cmd)
 cmd="cp -r ../Scripts/microlambda_template/* "+func+"/"
 print(cmd)
 os.system(cmd)
+
+#copy configuration template
+cmd="cp -r ../Config/*.py "+func+"/PythonCode/"
+print(cmd)
+os.system(cmd)

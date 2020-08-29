@@ -28,6 +28,7 @@ AppURL = dict(
     face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
     air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
     human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
+    mental_stress_app='http://'+ip+':8080/function/mental-stress-microlambda',
 )
 
 #publish via redis

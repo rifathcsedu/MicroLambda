@@ -36,7 +36,9 @@ def handle (req):
     training_size=json_req["training"]
     total_size=json_req["size"]
     threshold=int(json_req["threshold"])
-
+    epoch=int(json_req["epoch"])
+    batch=int(json_req["batch"])
+    neoron=int(json_req["neoron"])
     while(True):
         publish_redis("test", "new loop")
         time_diff=time.time()-start
@@ -57,7 +59,7 @@ def handle (req):
 
         current=i
         publish_redis("test","current= "+str(current))
-        n_train_hours=arr.shape[0]-24*int(json_req["training"]*0.2) # 20 percent data for testing
+        n_train_hours=arr.shape[0]-24*int(json_req["training"]*0.1) # 20 percent data for testing
         train = arr[:n_train_hours, :]
         test = arr[n_train_hours:, :]
         # split into input and outputs
@@ -67,7 +69,7 @@ def handle (req):
         test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
         model = None
         model = Sequential()
-        model.add(LSTM(100, input_shape=(train_X.shape[1], train_X.shape[2])))
+        model.add(LSTM(neoron, input_shape=(train_X.shape[1], train_X.shape[2])))
         model.add(Dense(1))
         temp=RedisLoadModel(Topic["model_air_pollution_app"])
 
@@ -82,7 +84,7 @@ def handle (req):
         #print("Model setting done and compile done!!!")
         publish_redis("test", "Model setting done and compile done!!!")
         # fit network
-        history = model.fit(train_X, train_y, epochs=50, batch_size=72, validation_data=(test_X, test_y), verbose=2,shuffle=False)
+        history = model.fit(train_X, train_y, epochs=epoch, batch_size=batch, validation_data=(test_X, test_y), verbose=2,shuffle=False)
         publish_redis("test", "Training done!!!")
 
         #save model to redis
