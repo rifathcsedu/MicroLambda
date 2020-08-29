@@ -8,7 +8,7 @@ sys.path.append('../../Class/')
 
 from configuration import *
 
-GraphData={1:{1:{"x_label":"Number of Images","y_label":"Execution Time (sec)"}},2:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)"},2:{"x_label":"Epoch Size","y_label":"RMSE"}},3:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)"},2:{"x_label":"Epoch Size","y_label":"Accuracy (%)"},3:{"x_label":"Epoch Size","y_label":"Error (%)"}}}
+GraphData={1:{1:{"x_label":"Number of Images","y_label":"Execution Time (sec)","title":"Execution Time for Face Recognition Application"}},2:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Air Pollution Training"},2:{"x_label":"Epoch Size","y_label":"RMSE","title":"RMSE for Air Pollution Training"}},3:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Human Activity Classification Training"},2:{"x_label":"Epoch Size","y_label":"Accuracy (%)","title":"Accuracy rate for Human Activity Classification Training"},3:{"x_label":"Epoch Size","y_label":"Error (%)","title":"Error rate for Human Activity Classification Training"}}}
 
 def AccuracyGraph(FileName):
     data=ReadCSV(FileName)
@@ -207,12 +207,15 @@ else:
     x_axis,y_line_list,unique_threshold_legend=GetDataForApp(app_name,type)
 
     fig, ax = plt.subplots()
+    color_data=0.9
     for i in y_line_list:
         print (i)
         if(len(x_axis)==len(y_line_list[i])):
-            ax.plot(x_axis,y_line_list[i])
+            ax.plot(x_axis,y_line_list[i],c=str(color_data))
         else:
-            ax.plot(x_axis[:len(y_line_list[i])], y_line_list[i])
+            ax.plot(x_axis[:len(y_line_list[i])], y_line_list[i],c=str(color_data))
+        color_data-=.15
+    plt.title(GraphData[app_name][type]["title"])
     plt.legend(unique_threshold_legend)
     plt.xlabel(GraphData[app_name][type]["x_label"])
     plt.ylabel(GraphData[app_name][type]["y_label"])
