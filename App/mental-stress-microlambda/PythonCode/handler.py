@@ -114,6 +114,7 @@ def create_features(window_size, df):
 
 def handle (req):
     print("Start!!")
+    CleaningModel(Topic["model_mental_stress_app"])
     publish_redis("test", "Training started!!!")
     start = time.time()
     print(req)
@@ -147,9 +148,17 @@ def handle (req):
             i+=1
 
         current=i
-
+        S=None
         control_data = []
         stress_data = []
+        temp=RedisLoadModel(Topic["model_mental_stress_app"])
+        if(temp==None):
+            S=[]
+        else:
+            S=pickle.loads(temp)
+            control_data = S[0]
+            stress_data = S[1]
+
         for i in range(len(control)):
             publish_redis("test", "feature i= " + str(i))
             control1 = create_features(60000, control[i])
@@ -157,90 +166,82 @@ def handle (req):
             stress1 = create_features(60000, stress[i])
             stress_data.append(stress1)
 
-        control_data = pd.concat(control_data)
-        control_data = control_data.apply(pd.to_numeric)
+        if(current==size):
+            print("S is "+str(len(control_data)))
+            control_data = pd.concat(control_data)
+            control_data = control_data.apply(pd.to_numeric)
 
-        stress_data = pd.concat(stress_data)
-        stress_data = stress_data.apply(pd.to_numeric)
+            stress_data = pd.concat(stress_data)
+            stress_data = stress_data.apply(pd.to_numeric)
 
-        columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
+            columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
 
-        for f in columns:
-            max_feature = control_data[f].max()
-            control_data[f] = control_data[f] / max_feature
-        df_con = control_data[columns]
+            for f in columns:
+                max_feature = control_data[f].max()
+                control_data[f] = control_data[f] / max_feature
+            df_con = control_data[columns]
 
-        dfs = np.array_split(df_con, training_size)
+            dfs = np.array_split(df_con, training_size)
 
-        dfs = np.split(df_con, [5], axis=0)
+            dfs = np.split(df_con, [5], axis=0)
 
-        for f in columns:
-            max_feature = stress_data[f].max()
-            stress_data[f] = stress_data[f] / max_feature
-        df_str = stress_data[columns]
+            for f in columns:
+                max_feature = stress_data[f].max()
+                stress_data[f] = stress_data[f] / max_feature
+            df_str = stress_data[columns]
 
-        dfs1 = np.array_split(df_str, training_size)
+            dfs1 = np.array_split(df_str, training_size)
 
-        # rB,_=df_base.shape
-        rC, _ = df_con.shape
-        rS, _ = df_str.shape
+            # rB,_=df_base.shape
+            rC, _ = df_con.shape
+            rS, _ = df_str.shape
 
-        # y1=[0] * rB
-        y2 = [0] * rC
-        y3 = [1] * rS
+            # y1=[0] * rB
+            y2 = [0] * rC
+            y3 = [1] * rS
 
-        df_con['label'] = y2
-        df_str['label'] = y3
-
-
-        dfs1 = np.array_split(df_str, training_size)
-        dfs = np.array_split(df_con, training_size)
-
-        S=[]
-        for i in range (training_size):
-            S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
-            S.append(S0)
+            df_con['label'] = y2
+            df_str['label'] = y3
 
 
-        X1 = pd.concat(S, ignore_index=True)
+            dfs1 = np.array_split(df_str, training_size)
+            dfs = np.array_split(df_con, training_size)
+            S=[]
+            for i in range (training_size):
+                S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
+                S.append(S0)
 
-        #X2 = pd.concat([S0, S1, S3, S15, S17, S18, S32, S33, S36, S49, S50, S51])
+            X1 = pd.concat(S, ignore_index=True)
 
-        X_train = X1[columns]
-        y_train = X1["label"]
-        # X_test = X2[columns]
-        # y_test = X2['label']
+            #X2 = pd.concat([S0, S1, S3, S15, S17, S18, S32, S33, S36, S49, S50, S51])
 
-        from sklearn.metrics import classification_report
-        publish_redis("test", "training starts")
-
-        model=None
-        temp=RedisLoadModel(Topic["model_mental_stress_app"])
-        if (temp != None):
-            json_data = pickle.loads(temp)
-            model=json_data
-            publish_redis("test", "Model loading done!!!")
-        else:
+            X_train = X1[columns]
+            y_train = X1["label"]
+            # X_test = X2[columns]
+            # y_test = X2['label']
+            start=time.time()
+            from sklearn.metrics import classification_report
+            publish_redis("test", "training starts")
             model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
-                                   solver='lbfgs', alpha=0.1, random_state=1,
-                                   learning_rate='adaptive', momentum=0.3,
-                                   learning_rate_init=0.1, max_iter=100, batch_size=16)
+                                       solver='lbfgs', alpha=0.1, random_state=1,
+                                       learning_rate='adaptive', momentum=0.3,
+                                       learning_rate_init=0.1, max_iter=100, batch_size=16)
+
             publish_redis("test", "New Model created!!!")
+            model.fit(X_train, y_train)
 
+            publish_redis("test","Training Done!!!")
+            publish_redis("test", "Saving model starts...!!")
 
-        model.fit(X_train, y_train)
+            RedisSaveModel(Topic['model_mental_stress_app'], pickle.dumps(model))
 
-        publish_redis("test","Training Done!!!")
-
-        #save model to redis
-        publish_redis("test", "Saving model starts...!!")
-
-        #model_weight=pickle.dumps()
-
-        RedisSaveModel(Topic['model_mental_stress_app'], pickle.dumps(model))
-
-        #print("Saving model done...!!")
-        publish_redis("test", "Saving model done...!!")
+            #print("Saving model done...!!")
+            publish_redis("test", "Saving model done...!!")
+        else:
+            print("Size of S"+str(len(control_data)))
+            publish_redis("test", "Intermediate state save starts")
+            RedisSaveModel(Topic['model_mental_stress_app'], pickle.dumps([control_data,stress_data]))
+            publish_redis("test", "Intermediate state save done!!")
 
     json_req["current"]=current
     publish_redis("test", json.dumps({"data":"done"}))
