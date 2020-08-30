@@ -148,6 +148,9 @@ def load_data(filename, chunksize):
                 31, 32, 33, 34, 35, 36, 36, 38, 39, 40, 41, 42, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
                 60]
 
+    #S2, S4, S5, S6, S7, S8, S9, S10, S11, S12, S12, S14, S16, S19, S20,
+    # S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S34, S35, S37, S38, S39, S40,
+    # S41, S42, S43, S44, S45, S46, S47, S48, S52, S53, S54, S55, S56
     controlPath,stressPath=getFiles(SUBJECTS)
     print(controlPath)
     print(stressPath)
@@ -171,89 +174,87 @@ def load_data(filename, chunksize):
 
 def Testing(current,training_size,size):
     print("Testing Starts")
-    arr=[]
-    i=current
-    while(i<=training_size):
-        temp=LoadData(Topic["input_human_activity_app"], i, i)
-        print(pickle.loads(temp[0]))
-        if(i==current):
-            arr=pickle.loads(temp[0])
-        else:
-            arr=pd.concat([arr,pickle.loads(temp[0])])
-        i+=1
-    df_train = arr
-    arr=[]
-    while(i<size):
-
-        temp=LoadData(Topic["input_human_activity_app"], i, i)
+    #testing check (will remove)
+    testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
+    i=0
+    control=[]
+    stress=[]
+    while(i<len(testing_set)):
+        temp=LoadData(Topic["input_mental_stress_app"], testing_set[i], testing_set[i])
         #print(pickle.loads(temp[0]))
-        print(i)
-        if(i==training_size+1):
-            arr=pickle.loads(temp[0])
-        else:
-            arr=pd.concat([arr,pickle.loads(temp[0])])
+        print(testing_set[i])
+        loaded_data = pickle.loads(temp[0])
+        control.append(loaded_data[0])
+        stress.append(loaded_data[1])
         i+=1
-    df_test=arr
-    print(df_train)
-    print(df_test)
-    scale_columns = ['x_axis', 'y_axis', 'z_axis']
 
-    scaler = RobustScaler()
+    control_data = []
+    stress_data = []
+    for i in range(len(control)):
+        publish_redis("test", "feature i= " + str(i))
+        control1 = create_features(60000, control[i])
+        control_data.append(control1)
+        stress1 = create_features(60000, stress[i])
+        stress_data.append(stress1)
 
-    scaler = scaler.fit(df_train[scale_columns])
+    control_data = pd.concat(control_data)
+    control_data = control_data.apply(pd.to_numeric)
 
-    df_train.loc[:, scale_columns] = scaler.transform(df_train[scale_columns].to_numpy())
-    df_test.loc[:, scale_columns] = scaler.transform(df_test[scale_columns].to_numpy())
+    stress_data = pd.concat(stress_data)
+    stress_data = stress_data.apply(pd.to_numeric)
 
-    TIME_STEPS = 200
-    STEP = 40
+    columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
 
-    X_train, y_train = create_dataset(
-        df_train[['x_axis', 'y_axis', 'z_axis']],
-        df_train.activity,
-        TIME_STEPS,
-        STEP
-    )
+    for f in columns:
+        max_feature = control_data[f].max()
+        control_data[f] = control_data[f] / max_feature
+    df_con = control_data[columns]
 
-    X_test, y_test = create_dataset(
-        df_test[['x_axis', 'y_axis', 'z_axis']],
-        df_test.activity,
-        TIME_STEPS,
-        STEP
-    )
+    dfs = np.array_split(df_con, len(testing_set))
 
-    print(X_train.shape, y_train.shape)
+    dfs = np.split(df_con, [5], axis=0)
 
-    enc = OneHotEncoder(handle_unknown='ignore', sparse=False)
+    for f in columns:
+        max_feature = stress_data[f].max()
+        stress_data[f] = stress_data[f] / max_feature
+    df_str = stress_data[columns]
 
-    enc = enc.fit(y_train)
+    dfs1 = np.array_split(df_str, len(testing_set))
 
-    y_train = enc.transform(y_train)
-    y_test = enc.transform(y_test)
+    # rB,_=df_base.shape
+    rC, _ = df_con.shape
+    rS, _ = df_str.shape
 
-    model = keras.Sequential()
-    model.add(
-        keras.layers.LSTM(
-            units=50,
-            input_shape=[X_train.shape[1], X_train.shape[2]]
-        )
-    )
+    # y1=[0] * rB
+    y2 = [0] * rC
+    y3 = [1] * rS
 
-    model.add(keras.layers.Dropout(rate=0.5))
-    model.add(keras.layers.Dense(units=50, activation='relu'))
-    model.add(keras.layers.Dense(y_train.shape[1], activation='softmax'))
+    df_con['label'] = y2
+    df_str['label'] = y3
 
-    temp=RedisLoadModel(Topic["model_human_activity_app"])
 
-    json_data = pickle.loads(temp)
-    model.set_weights(json_data)
-    print("Model loading done!!!")
+    dfs1 = np.array_split(df_str, len(testing_set))
+    dfs = np.array_split(df_con, len(testing_set))
 
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
-    #print("Model setting done and compile done!!!")
-    print("Model setting done and compile done!!!")
+    S=[]
+    for i in range (len(testing_set)):
+        S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
+        S.append(S0)
+
+
+    X1 = pd.concat(S, ignore_index=True)
+    # X_test = X2[columns]
+    # y_test = X2['label']
+    X_test=X1[columns]
+    y_test=X1['label']
+    model=pickle.loads(RedisLoadModel(Topic["model_mental_stress_app"]))
+    y_pred = model.predict(X_test)
+    #print(y_predict_ann)
+    # We can now compare the "predicted labels" for the Testing Set with its "actual labels" to evaluate the accuracy
+    score_ann = accuracy_score(y_test, y_pred)
+    print(score_ann)
     print("Testing Done!!!")
-    return model.evaluate(X_test,y_test)
+    return score_ann
     #y_pred=model.predict(X_test)
     #print(y_pred)
 
@@ -271,14 +272,14 @@ def UserInput():
     #user controller starts
     print("Hello User! I am MR. Packetized Computation! There is your option: ")
     print("Cleaning input Started!")
-    Cleaning(Topic["input_mental_stress_app"])
-    #CleaningModel(Topic["model_human_activity_app"])
+    #Cleaning(Topic["input_mental_stress_app"])
+    CleaningModel(Topic["model_mental_stress_app"])
     print("Taking Break for "+str(sleep_time)+" sec!")
 
     filename = input_dir
     print("Loading Mental Stress Data from Dataset: " + filename)
     upload_time=time.time()
-    load_data(filename, chunk_size)
+    #load_data(filename, chunk_size)
     upload_time=time.time()-upload_time
     print("Uploading Time: "+str(upload_time))
     testing_size=12
@@ -327,7 +328,7 @@ def UserInput():
                         GetResult(Topic["result_mental_stress_app"])
                         end = time.time()
                         print("time: " + str(end - start))
-                        #acc=Testing(1,30,max_data)
+                        acc=Testing(1,30,max_data)
                         data.append([threshold,l,acc[1],acc[0],end-start+upload_time])
                         WriteCSV(output_dir, data)
                         print("done!")

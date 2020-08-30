@@ -114,7 +114,7 @@ def create_features(window_size, df):
 
 def handle (req):
     print("Start!!")
-    CleaningModel(Topic["model_mental_stress_app"])
+    #CleaningModel(Topic["model_mental_stress_app"])
     publish_redis("test", "Training started!!!")
     start = time.time()
     print(req)
@@ -245,85 +245,6 @@ def handle (req):
 
     json_req["current"]=current
     publish_redis("test", json.dumps({"data":"done"}))
-    #testing check (will remove)
-    testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
-    i=0
-    control=[]
-    stress=[]
-    while(i<len(testing_set)):
-        temp=LoadData(Topic["input_mental_stress_app"], testing_set[i], testing_set[i])
-        #print(pickle.loads(temp[0]))
-        print(testing_set[i])
-        loaded_data = pickle.loads(temp[0])
-        control.append(loaded_data[0])
-        stress.append(loaded_data[1])
-        i+=1
-
-    control_data = []
-    stress_data = []
-    for i in range(len(control)):
-        publish_redis("test", "feature i= " + str(i))
-        control1 = create_features(60000, control[i])
-        control_data.append(control1)
-        stress1 = create_features(60000, stress[i])
-        stress_data.append(stress1)
-
-    control_data = pd.concat(control_data)
-    control_data = control_data.apply(pd.to_numeric)
-
-    stress_data = pd.concat(stress_data)
-    stress_data = stress_data.apply(pd.to_numeric)
-
-    columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
-
-    for f in columns:
-        max_feature = control_data[f].max()
-        control_data[f] = control_data[f] / max_feature
-    df_con = control_data[columns]
-
-    dfs = np.array_split(df_con, len(testing_set))
-
-    dfs = np.split(df_con, [5], axis=0)
-
-    for f in columns:
-        max_feature = stress_data[f].max()
-        stress_data[f] = stress_data[f] / max_feature
-    df_str = stress_data[columns]
-
-    dfs1 = np.array_split(df_str, len(testing_set))
-
-    # rB,_=df_base.shape
-    rC, _ = df_con.shape
-    rS, _ = df_str.shape
-
-    # y1=[0] * rB
-    y2 = [0] * rC
-    y3 = [1] * rS
-
-    df_con['label'] = y2
-    df_str['label'] = y3
-
-
-    dfs1 = np.array_split(df_str, len(testing_set))
-    dfs = np.array_split(df_con, len(testing_set))
-
-    S=[]
-    for i in range (len(testing_set)):
-        S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
-        S.append(S0)
-
-
-    X1 = pd.concat(S, ignore_index=True)
-    # X_test = X2[columns]
-    # y_test = X2['label']
-    X_test=X1[columns]
-    y_test=X1['label']
-    model=pickle.loads(RedisLoadModel(Topic["model_mental_stress_app"]))
-    y_pred = model.predict(X_test)
-    #print(y_predict_ann)
-    # We can now compare the "predicted labels" for the Testing Set with its "actual labels" to evaluate the accuracy
-    score_ann = accuracy_score(y_test, y_pred)
-    print(score_ann)
     return publish_redis(Topic["publish_mental_stress_app"],json.dumps(json_req))
 
 if __name__ == "__main__":
