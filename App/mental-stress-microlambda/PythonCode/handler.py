@@ -37,6 +37,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import cross_val_score
 
+from RedisPubSub import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -112,6 +113,7 @@ def create_features(window_size, df):
     return analyzed
 
 def handle (req):
+    print("Start!!")
     publish_redis("test", "Training started!!!")
     start = time.time()
     print(req)
@@ -124,31 +126,32 @@ def handle (req):
     threshold=int(json_req["threshold"])
     size=int(json_req["size"])
     epoch=int(json_req["epoch"])
+    training_set=[2,4,5,6,7,8,9,10,11,12,12,14,16,19,20,21,22,23,24,25,26,27,28,29,30,31,34,35,37,38,39,40,
+                 41,42,43,44,45,46,47,48,52,53,54,55,56]
+    print(len(training_set))
+    print("loop starts")
+
     while(time.time()-start<threshold and current<size):
         publish_redis("test", "New loop!!! current= "+str(current))
         control=[]
         stress=[]
         i=current
         while(i<current+training_size and i<size):
-            publish_redis("test", "i= " + str(i))
-            temp=LoadData(Topic["input_mental_stress_app"], i, i)
-            print(pickle.loads(temp[0]))
-            loaded_data = pickle.loads(temp[0])
-            if(i==current):
-                control=loaded_data[0]
-                stress=loaded_data[1]
-            else:
-                control=pd.concat([control,loaded_data[0]])
-                stress = pd.concat([stress, loaded_data[1]])
 
-            print(control.size)
-            print(stress.size)
+            temp=LoadData(Topic["input_mental_stress_app"], training_set[i], training_set[i])
+            #print(pickle.loads(temp[0]))
+            print(training_set[i])
+            loaded_data = pickle.loads(temp[0])
+            control.append(loaded_data[0])
+            stress.append(loaded_data[1])
             i+=1
+
         current=i
 
         control_data = []
         stress_data = []
         for i in range(len(control)):
+            publish_redis("test", "feature i= " + str(i))
             control1 = create_features(60000, control[i])
             control_data.append(control1)
             stress1 = create_features(60000, stress[i])
@@ -175,7 +178,7 @@ def handle (req):
             max_feature = stress_data[f].max()
             stress_data[f] = stress_data[f] / max_feature
         df_str = stress_data[columns]
-        
+
         dfs1 = np.array_split(df_str, training_size)
 
         # rB,_=df_base.shape
@@ -194,8 +197,8 @@ def handle (req):
         dfs = np.array_split(df_con, training_size)
 
         S=[]
-        for i in range (len(training_size)):
-            S0 = pd.concat([dfs[0], dfs1[0]], ignore_index=True)
+        for i in range (training_size):
+            S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
             S.append(S0)
 
 
@@ -209,20 +212,118 @@ def handle (req):
         # y_test = X2['label']
 
         from sklearn.metrics import classification_report
+        publish_redis("test", "training starts")
 
-        model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
-                               solver='lbfgs', alpha=0.1, random_state=1,
-                               learning_rate='adaptive', momentum=0.3,
-                               learning_rate_init=0.1, max_iter=100, batch_size=16)
+        model=None
+        temp=RedisLoadModel(Topic["model_mental_stress_app"])
+        if (temp != None):
+            json_data = pickle.loads(temp)
+            model=json_data
+            publish_redis("test", "Model loading done!!!")
+        else:
+            model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
+                                   solver='lbfgs', alpha=0.1, random_state=1,
+                                   learning_rate='adaptive', momentum=0.3,
+                                   learning_rate_init=0.1, max_iter=100, batch_size=16)
+            publish_redis("test", "New Model created!!!")
 
 
         model.fit(X_train, y_train)
 
         publish_redis("test","Training Done!!!")
 
+        #save model to redis
+        publish_redis("test", "Saving model starts...!!")
+
+        #model_weight=pickle.dumps()
+
+        RedisSaveModel(Topic['model_mental_stress_app'], pickle.dumps(model))
+
+        #print("Saving model done...!!")
+        publish_redis("test", "Saving model done...!!")
+
     json_req["current"]=current
     publish_redis("test", json.dumps({"data":"done"}))
-    return publish_redis(Topic["publish_human_activity_app"],json.dumps(json_req))
+    #testing check (will remove)
+    testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
+    i=0
+    control=[]
+    stress=[]
+    while(i<len(testing_set)):
+        temp=LoadData(Topic["input_mental_stress_app"], testing_set[i], testing_set[i])
+        #print(pickle.loads(temp[0]))
+        print(testing_set[i])
+        loaded_data = pickle.loads(temp[0])
+        control.append(loaded_data[0])
+        stress.append(loaded_data[1])
+        i+=1
+
+    control_data = []
+    stress_data = []
+    for i in range(len(control)):
+        publish_redis("test", "feature i= " + str(i))
+        control1 = create_features(60000, control[i])
+        control_data.append(control1)
+        stress1 = create_features(60000, stress[i])
+        stress_data.append(stress1)
+
+    control_data = pd.concat(control_data)
+    control_data = control_data.apply(pd.to_numeric)
+
+    stress_data = pd.concat(stress_data)
+    stress_data = stress_data.apply(pd.to_numeric)
+
+    columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
+
+    for f in columns:
+        max_feature = control_data[f].max()
+        control_data[f] = control_data[f] / max_feature
+    df_con = control_data[columns]
+
+    dfs = np.array_split(df_con, len(testing_set))
+
+    dfs = np.split(df_con, [5], axis=0)
+
+    for f in columns:
+        max_feature = stress_data[f].max()
+        stress_data[f] = stress_data[f] / max_feature
+    df_str = stress_data[columns]
+
+    dfs1 = np.array_split(df_str, len(testing_set))
+
+    # rB,_=df_base.shape
+    rC, _ = df_con.shape
+    rS, _ = df_str.shape
+
+    # y1=[0] * rB
+    y2 = [0] * rC
+    y3 = [1] * rS
+
+    df_con['label'] = y2
+    df_str['label'] = y3
+
+
+    dfs1 = np.array_split(df_str, len(testing_set))
+    dfs = np.array_split(df_con, len(testing_set))
+
+    S=[]
+    for i in range (len(testing_set)):
+        S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
+        S.append(S0)
+
+
+    X1 = pd.concat(S, ignore_index=True)
+    # X_test = X2[columns]
+    # y_test = X2['label']
+    X_test=X1[columns]
+    y_test=X1['label']
+    model=pickle.loads(RedisLoadModel(Topic["model_mental_stress_app"]))
+    y_pred = model.predict(X_test)
+    #print(y_predict_ann)
+    # We can now compare the "predicted labels" for the Testing Set with its "actual labels" to evaluate the accuracy
+    score_ann = accuracy_score(y_test, y_pred)
+    print(score_ann)
+    return publish_redis(Topic["publish_mental_stress_app"],json.dumps(json_req))
 
 if __name__ == "__main__":
     st = get_stdin()
