@@ -134,6 +134,35 @@ def subscribe_redis_human():
                 publish_redis(Topic['result_human_activity_app'],
                               str(json.dumps(message["data"].decode('utf8').replace("'", '"'))))
 
+#waiting for message to trigger
+def subscribe_redis_mental():
+    global terminate
+    start_time=None
+    p=PubSubSubscriber(Topic["publish_mental_stress_app"])
+    print("Mental Stress PubSub Controller Started...\nWaiting for input...")
+    while terminate:
+        message = p.get_message()
+        if message and message['data']!=1:
+            print(message)
+            url = AppURL["mental_stress_app"]
+            check = json.loads(message["data"])
+            print(check)
+            print(check["current"])
+            if (check["current"] == 0):
+                start_time = time.time()
+                print("Start Time "+str(start_time))
+            if (check["current"]< check["size"]):
+                cmd = "curl " + url + " --data-binary " + json.dumps(message["data"].decode('utf8').replace("'", '"'))
+                print(cmd)
+                print(os.system(cmd))
+            else:
+                total_time = time.time() - start_time
+                print("Computation Time: ")
+                print(total_time)
+                print("Mental Stress Training Done!!")
+                publish_redis(Topic['result_mental_stress_app'],str(json.dumps(message["data"].decode('utf8').replace("'", '"'))))
+
+
 if __name__ == '__main__':
     face_thread = threading.Thread(target=subscribe_redis_face)
     face_thread.start()
@@ -141,6 +170,8 @@ if __name__ == '__main__':
     pollution_thread.start()
     human_thread = threading.Thread(target=subscribe_redis_human)
     human_thread.start()
+    mental_thread = threading.Thread(target=subscribe_redis_mental)
+    mental_thread.start()
     print("Type DONE to kill all thread")
     in1=input("Enter DONE to Delete: ")
     print(in1)
@@ -155,4 +186,5 @@ if __name__ == '__main__':
         pollution_thread.join()
         #human_thread.terminate()
         human_thread.join()
+        mental_thread.join()
         print("Process killing done!!")
