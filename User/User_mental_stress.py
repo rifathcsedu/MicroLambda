@@ -172,7 +172,7 @@ def load_data(filename, chunksize):
     print("Uploading done!")
     print(i)
 
-def Testing(current,training_size,size):
+def Testing():
     print("Testing Starts")
     #testing check (will remove)
     testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
@@ -272,8 +272,8 @@ def UserInput():
     #user controller starts
     print("Hello User! I am MR. Packetized Computation! There is your option: ")
     print("Cleaning input Started!")
-    #Cleaning(Topic["input_mental_stress_app"])
-    CleaningModel(Topic["model_mental_stress_app"])
+    Cleaning(Topic["input_mental_stress_app"])
+    #CleaningModel(Topic["model_mental_stress_app"])
     print("Taking Break for "+str(sleep_time)+" sec!")
 
     filename = input_dir
@@ -314,13 +314,13 @@ def UserInput():
                         # publish it to trigger DBController
                         train=0
                         if(threshold=='1500'):
-                            train=30
+                            train=45
                         else:
-                            train=10
+                            train=15
                         publish_redis(Topic["publish_mental_stress_app"], str(json.dumps({
                             "size": max_data-testing_size+1,
                             'app':'mental-stress-app',
-                            "current":1,
+                            "current":0,
                             "training":train,
                             "epoch":int(l),
                             "threshold": int(threshold)
@@ -328,8 +328,8 @@ def UserInput():
                         GetResult(Topic["result_mental_stress_app"])
                         end = time.time()
                         print("time: " + str(end - start))
-                        acc=Testing(1,30,max_data)
-                        data.append([threshold,l,acc[1],acc[0],end-start+upload_time])
+                        acc=Testing()
+                        data.append([threshold,l,acc,end-start+upload_time, upload_time])
                         WriteCSV(output_dir, data)
                         print("done!")
 
