@@ -1,44 +1,17 @@
 import json
 import pickle
-import numpy as np
 import os
 import datetime
-from pathlib import Path
-import pandas as pd
 import neurokit2 as nk
-import sklearn
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
 import contextlib
 import io
 import sys
 import time
-import keras
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.optimizers import SGD
-from keras.models import load_model
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-import warnings
-
-warnings.filterwarnings("ignore")
-from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
 from sklearn.neural_network import MLPClassifier
-from sklearn.model_selection import cross_val_score
 
 from RedisPubSub import *
-warnings.simplefilter(action='ignore', category=FutureWarning)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
@@ -141,7 +114,8 @@ def handle (req):
 
             temp=LoadData(Topic["input_mental_stress_app"], training_set[i], training_set[i])
             #print(pickle.loads(temp[0]))
-            print(training_set[i])
+            #print(training_set[i])
+            publish_redis("test", training_set[i])
             loaded_data = pickle.loads(temp[0])
             control.append(loaded_data[0])
             stress.append(loaded_data[1])
@@ -154,10 +128,12 @@ def handle (req):
         temp=RedisLoadModel(Topic["model_mental_stress_app"])
         if(temp==None):
             S=[]
+            publish_redis("test", "empty data")
         else:
             S=pickle.loads(temp)
             control_data = S[0]
             stress_data = S[1]
+            publish_redis("test", "loaded data")
 
         for i in range(len(control)):
             publish_redis("test", "feature i= " + str(i))
@@ -220,12 +196,11 @@ def handle (req):
             # X_test = X2[columns]
             # y_test = X2['label']
             start=time.time()
-            from sklearn.metrics import classification_report
             publish_redis("test", "training starts")
             model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
                                        solver='lbfgs', alpha=0.1, random_state=1,
                                        learning_rate='adaptive', momentum=0.3,
-                                       learning_rate_init=0.1, max_iter=100, batch_size=16)
+                                       learning_rate_init=0.1, max_iter=int(epoch), batch_size=16)
 
             publish_redis("test", "New Model created!!!")
             model.fit(X_train, y_train)
