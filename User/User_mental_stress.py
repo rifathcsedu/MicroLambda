@@ -17,7 +17,12 @@ from keras.models import model_from_json
 import numpy as np
 from sklearn import preprocessing
 import pandas as pd
-
+import datetime
+import neurokit2 as nk
+import contextlib
+import io
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
 sys.path.append('../Config/')
 sys.path.append('../Class/')
 
@@ -26,7 +31,7 @@ from configuration import *
 from HumanActivity import *
 min_data=0
 max_data=0
-
+num_features = 15
 def load_control(path):
     print("Loading Control: "+path)
     with open(path) as file:
@@ -142,6 +147,39 @@ def getFiles(SUBJECTS):
                 stress.append(temp)
     return control,stress
 
+def getfeatures(df):
+    features = [None for i in range(num_features)]
+    ecg = df['ECG - ECG100C']
+
+    ecg_cleaned = nk.ecg_clean(ecg, sampling_rate=1000)
+    instant_peaks, rpeaks, = nk.ecg_peaks(ecg_cleaned, sampling_rate=1000)
+    rate = nk.ecg_rate(rpeaks, sampling_rate=1000, desired_length=len(ecg_cleaned))
+
+    # Prepare output
+    signals = pd.DataFrame({"ECG_Rate": rate})
+    ecg = df['ECG - ECG100C']
+    peaks, info = nk.ecg_peaks(ecg, sampling_rate=1000)
+    hrv_time = nk.hrv_time(peaks, sampling_rate=1000, show=False)
+    hrv_freq = nk.hrv_frequency(peaks, sampling_rate=1000, show=False)
+
+    # ECG Heart Rate Statistics:
+    features[0] = signals['ECG_Rate'].mean()
+    features[1] = signals['ECG_Rate'].std()
+    features[2] = hrv_time['HRV_RMSSD'].to_string(header=None, index=None)
+    features[3] = hrv_time['HRV_MeanNN'].to_string(header=None, index=None)
+    features[4] = hrv_time['HRV_SDNN'].to_string(header=None, index=None)
+    features[5] = hrv_time['HRV_CVNN'].to_string(header=None, index=None)
+    features[6] = hrv_time['HRV_CVSD'].to_string(header=None, index=None)
+    features[7] = hrv_time['HRV_MedianNN'].to_string(header=None, index=None)
+    features[8] = hrv_time['HRV_MadNN'].to_string(header=None, index=None)
+    features[9] = hrv_time['HRV_MCVNN'].to_string(header=None, index=None)
+    features[10] = hrv_time['HRV_pNN50'].to_string(header=None, index=None)
+    features[11] = hrv_time['HRV_pNN20'].to_string(header=None, index=None)
+    features[12] = hrv_freq['HRV_HF'].to_string(header=None, index=None)
+    features[13] = hrv_freq['HRV_VHF'].to_string(header=None, index=None)
+    features[14] = hrv_freq['HRV_HFn'].to_string(header=None, index=None)
+
+    return features
 #upload the data to Redis
 def load_data(filename, chunksize):
     SUBJECTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
@@ -152,9 +190,6 @@ def load_data(filename, chunksize):
     # S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S34, S35, S37, S38, S39, S40,
     # S41, S42, S43, S44, S45, S46, S47, S48, S52, S53, S54, S55, S56
     controlPath,stressPath=getFiles(SUBJECTS)
-    print(controlPath)
-    print(stressPath)
-
     global max_data
     global min_data
     min_data=0
@@ -176,6 +211,7 @@ def Testing():
     print("Testing Starts")
     #testing check (will remove)
     testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
+    num_features = 15
     i=0
     control=[]
     stress=[]
@@ -257,9 +293,30 @@ def Testing():
     return score_ann
     #y_pred=model.predict(X_test)
     #print(y_pred)
+def create_features(window_size, df):
+    @contextlib.contextmanager
+    def nostdout():
+        save_stdout = sys.stdout
+        sys.stdout = io.BytesIO()
+        yield
+        sys.stdout = save_stdout
 
+    with nostdout():
+        time_start_features = time.time()
+        feature_array = []
+        total_datapoints = len(df.index)
+        curr_start = 0
+        while curr_start + window_size <= total_datapoints:
+            curr_end = curr_start + window_size
+            features = getfeatures(df[curr_start:curr_end])
+            feature_array.append(features)
+            curr_start = curr_start + window_size
+            curr_start = int(curr_start)
 
-
+            analyzed = pd.DataFrame(data=feature_array, columns=["HR_mean", "HR_std", 'RMSSD', 'meanNN', 'sdNN',
+                                                                 'cvNN', 'CVSD', 'medianNN', 'madNN', 'mcvNN', 'pNN50',
+                                                                 'pNN20', 'HF', 'VHF', 'HFn'])
+    return analyzed
 #user controller
 def UserInput():
 
@@ -279,7 +336,7 @@ def UserInput():
     filename = input_dir
     print("Loading Mental Stress Data from Dataset: " + filename)
     upload_time=time.time()
-    #load_data(filename, chunk_size)
+    load_data(filename, chunk_size)
     upload_time=time.time()-upload_time
     print("Uploading Time: "+str(upload_time))
     testing_size=12
@@ -289,7 +346,7 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[20]
+            epoch_list=[50000]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
 
@@ -317,8 +374,9 @@ def UserInput():
                             train=45
                         else:
                             train=15
+                        testing_size=12
                         publish_redis(Topic["publish_mental_stress_app"], str(json.dumps({
-                            "size": max_data-testing_size+1,
+                            "size": max_data-testing_size,
                             'app':'mental-stress-app',
                             "current":0,
                             "training":train,

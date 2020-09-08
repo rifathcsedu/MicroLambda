@@ -33,8 +33,8 @@ Topic = dict(
 )
 
 MicroLambda=dict(
-    #short_lambda=['240']
-    short_lambda=['1500','420','360','300','240','180']
+    short_lambda=['120','60','30']
+    #short_lambda=['1500','300','240','180']
 
 )
 
