@@ -18,6 +18,7 @@ terminate=True
 air_app_container=subprocess.check_output("docker ps -aqf \"name=air-pollution-microlambda\"",shell=True).decode("utf-8").split()[0]
 face_app_container=subprocess.check_output("docker ps -aqf \"name=face-recognition-microlambda\"",shell=True).decode("utf-8").split()[0]
 human_app_container=subprocess.check_output("docker ps -aqf \"name=human-activity-microlambda\"",shell=True).decode("utf-8").split()[0]
+mental_app_container=subprocess.check_output("docker ps -aqf \"name=mental-stress-microlambda\"",shell=True).decode("utf-8").split()[0]
 thread_run=True
 def threading_CPU_MEM(cmd):
     print("Thread started!!!")
@@ -101,6 +102,27 @@ def subscribe_redis_monitor_app():
                     proc.start()
                 elif (check["type"] == "end"):
                     print("Monitoring Human Activity App ends...")
+                    cmd = "sudo killall tshark"
+                    os.system(cmd)
+                    print("Wireshark closed!!!")
+                    proc.terminate()
+                    print("Threading done. Saving the log data!!!!")
+
+            elif (check["app"] == 'mental-stress-app'):
+                if (check["type"] == "start"):
+                    print("Monitoring Mental Stress App starts...")
+                    filename = "Mental_Network_epoch" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
+                    cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Mental-Stress-App/" + filename + " &"
+                    os.system(cmd)
+                    os.system("pwd")
+                    filename_net = "../Results/CSV/Mental-Stress-App/CPU-MEM/Mental_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
+                    os.system("sudo rm " + filename_net)
+                    cmd = "docker container stats " + mental_app_container + "  --format  \"start,{{ .CPUPerc }},{{.MemPerc}},end\"  | tee --append " + filename_net
+                    print(cmd)
+                    proc = multiprocessing.Process(target=threading_CPU_MEM, args=(cmd,))
+                    proc.start()
+                elif (check["type"] == "end"):
+                    print("Monitoring Mental Stress App ends...")
                     cmd = "sudo killall tshark"
                     os.system(cmd)
                     print("Wireshark closed!!!")

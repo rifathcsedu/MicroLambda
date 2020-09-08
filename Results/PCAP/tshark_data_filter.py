@@ -12,7 +12,7 @@ filelist=glob.glob(filename+"*.pcap")
 data=[]
 for i in filelist:
     print(i)
-    output=subprocess.check_output("tshark -r "+i +" -T fields -e frame.len ip.addr==192.168.0.103",shell=True)
+    output=subprocess.check_output("tshark -r "+i +" -T fields -e frame.len ip.addr==192.168.0.107",shell=True)
     len_arr=output.decode("utf-8").split("\n")
     sum=0
     for j in len_arr:

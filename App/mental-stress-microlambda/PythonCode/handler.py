@@ -137,9 +137,9 @@ def handle (req):
 
         for i in range(len(control)):
             publish_redis("test", "feature i= " + str(i))
-            control1 = create_features(60000, control[i])
+            control1 = create_features(epoch, control[i])
             control_data.append(control1)
-            stress1 = create_features(60000, stress[i])
+            stress1 = create_features(epoch, stress[i])
             stress_data.append(stress1)
 
         if(current==size):
@@ -200,7 +200,7 @@ def handle (req):
             model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
                                        solver='lbfgs', alpha=0.1, random_state=1,
                                        learning_rate='adaptive', momentum=0.3,
-                                       learning_rate_init=0.1, max_iter=int(epoch), batch_size=16)
+                                       learning_rate_init=0.1, max_iter=100, batch_size=16)
 
             publish_redis("test", "New Model created!!!")
             model.fit(X_train, y_train)
