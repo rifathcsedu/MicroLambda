@@ -10,7 +10,7 @@ import time
 import numpy as np
 import pandas as pd
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import accuracy_score
+
 from RedisPubSub import *
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -22,11 +22,10 @@ def get_stdin():
         buf = buf + line
     return buf
 
-
-
-
 num_features = 15
 
+
+# Function to extract all features(HR and HRV)
 def getfeatures(df):
     features = [None for i in range(num_features)]
     ecg = df['ECG - ECG100C']
@@ -60,9 +59,92 @@ def getfeatures(df):
     features[14] = hrv_freq['HRV_HFn'].to_string(header=None, index=None)
 
     return features
+def Testing(model, overlap):
+    print("Testing Starts")
+    #testing check (will remove)
+    testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
+    #num_features = 15
+    i=0
+    control=[]
+    stress=[]
+    while(i<len(testing_set)):
+        temp=LoadData(Topic["input_mental_stress_app"], testing_set[i], testing_set[i])
+        #print(pickle.loads(temp[0]))
+        print(testing_set[i])
+        loaded_data = pickle.loads(temp[0])
+        control.append(loaded_data[0])
+        stress.append(loaded_data[1])
+        i+=1
+
+    control_data = []
+    stress_data = []
+    for i in range(len(control)):
+        publish_redis("test", "feature i= " + str(i))
+        control1 = create_features(60000, control[i],overlap)
+        control_data.append(control1)
+        stress1 = create_features(60000, stress[i],overlap)
+        stress_data.append(stress1)
+
+    control_data = pd.concat(control_data)
+    control_data = control_data.apply(pd.to_numeric)
+
+    stress_data = pd.concat(stress_data)
+    stress_data = stress_data.apply(pd.to_numeric)
+
+    columns = ['HR_mean', 'HR_std', 'RMSSD', 'meanNN', 'HF', 'HFn']
+
+    for f in columns:
+        max_feature = control_data[f].max()
+        control_data[f] = control_data[f] / max_feature
+    df_con = control_data[columns]
+
+    dfs = np.array_split(df_con, len(testing_set))
+
+    dfs = np.split(df_con, [5], axis=0)
+
+    for f in columns:
+        max_feature = stress_data[f].max()
+        stress_data[f] = stress_data[f] / max_feature
+    df_str = stress_data[columns]
+
+    dfs1 = np.array_split(df_str, len(testing_set))
+
+    # rB,_=df_base.shape
+    rC, _ = df_con.shape
+    rS, _ = df_str.shape
+
+    # y1=[0] * rB
+    y2 = [0] * rC
+    y3 = [1] * rS
+
+    df_con['label'] = y2
+    df_str['label'] = y3
 
 
-def create_features(window_size, df, overlap):
+    dfs1 = np.array_split(df_str, len(testing_set))
+    dfs = np.array_split(df_con, len(testing_set))
+
+    S=[]
+    for i in range (len(testing_set)):
+        S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
+        S.append(S0)
+
+
+    X1 = pd.concat(S, ignore_index=True)
+    # X_test = X2[columns]
+    # y_test = X2['label']
+    X_test=X1[columns]
+    y_test=X1['label']
+    #model=pickle.loads(RedisLoadModel(Topic["model_mental_stress_app"]))
+    y_pred = model.predict(X_test)
+    #print(y_predict_ann)
+    # We can now compare the "predicted labels" for the Testing Set with its "actual labels" to evaluate the accuracy
+    score_ann = accuracy_score(y_test, y_pred)
+    publish_redis("test", "Score: "+str(score_ann))
+    print(score_ann)
+    print("Testing Done!!!")
+    return score_ann
+def create_features(window_size, df,overlap):
     @contextlib.contextmanager
     def nostdout():
         save_stdout = sys.stdout
@@ -102,10 +184,12 @@ def handle (req):
     threshold=int(json_req["threshold"])
     size=int(json_req["size"])
     epoch=int(json_req["epoch"])
-    # training_set=[2,4,5,6,7,8,9,10,11,12,12,14,16,19,20,21,22,23,24,25,26,27,28,29,30,31,34,35,37,38,39,40,41,42,43,44,45,46,47,48,52,53,54,55,56]
-    # SUBJECTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,30,31, 32, 33, 34, 35, 36, 36, 38, 39, 40, 41, 42, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58,
-    #             59,60]
+    training_set=[2,4,5,6,7,8,9,10,11,12,12,14,16,19,20,21,22,23,24,25,26,27,28,29,30,31,34,35,37,38,39,40,41,42,43,44,45,46,47,48,52,53,54,55,56]
+    #training_set=[3,5,6,7,8,9,10,12,13,14,14,16,18,21,22,23,24,25,26,27,28,29,30,31,32,33,36,36,39,40,41,42,45,46,47,48,49,50,51,52,56,57,58,59,60]
 
+
+    print(len(training_set))
+    print("loop starts")
 
     while(time.time()-start<threshold and current<size):
         publish_redis("test", "New loop!!! current= "+str(current))
@@ -114,16 +198,15 @@ def handle (req):
         i=current
         while(i<current+training_size and i<size):
 
-            temp=LoadData(Topic["input_mental_stress_app"], i, i)
+            temp=LoadData(Topic["input_mental_stress_app"], training_set[i], training_set[i])
             #print(pickle.loads(temp[0]))
             #print(training_set[i])
-            publish_redis("test", i)
+            publish_redis("test", training_set[i])
             loaded_data = pickle.loads(temp[0])
             control.append(loaded_data[0])
             stress.append(loaded_data[1])
             i+=1
 
-        inter_current=current
         current=i
         publish_redis("test", "current="+str(current))
         S_load=None
@@ -146,9 +229,9 @@ def handle (req):
             stress1 = create_features(60000, stress[i],epoch)
             stress_data.append(stress1)
         publish_redis("test", "control size = " + str(len(control_data)))
-
         if(current==size):
             publish_redis("test","S is "+str(len(control_data)))
+            #print("S is "+str(len(control_data)))
             control_data = pd.concat(control_data)
             control_data = control_data.apply(pd.to_numeric)
             stress_data = pd.concat(stress_data)
@@ -161,7 +244,7 @@ def handle (req):
                 control_data[f] = control_data[f] / max_feature
             df_con = control_data[columns]
 
-            dfs = np.array_split(df_con, size)
+            dfs = np.array_split(df_con, len(training_set))
 
             dfs = np.split(df_con, [5], axis=0)
 
@@ -169,7 +252,7 @@ def handle (req):
                 max_feature = stress_data[f].max()
                 stress_data[f] = stress_data[f] / max_feature
             df_str = stress_data[columns]
-            dfs1 = np.array_split(df_str, size)
+            dfs1 = np.array_split(df_str, len(training_set))
 
             # rB,_=df_base.shape
             rC, _ = df_con.shape
@@ -181,51 +264,40 @@ def handle (req):
 
             df_con['label'] = y2
             df_str['label'] = y3
-            dfs1 = np.array_split(df_str, size)
-            dfs = np.array_split(df_con, size)
-            publish_redis("test", "Feature extraction done and adding to S array")
-            participants=[]
-            training_set=[2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 14, 16, 19, 20,
-                            21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 34, 35, 37, 38, 39, 40,
-                            41, 42, 43, 44, 45, 46, 47, 48, 52, 53, 54, 55, 56]
-            for i in range(45):
-                S0 = pd.concat([dfs[training_set[i]], dfs1[training_set[i]]], ignore_index=True)
-                participants.append(S0)
 
 
-            # In[34]:
+            dfs1 = np.array_split(df_str, len(training_set))
+            dfs = np.array_split(df_con, len(training_set))
+            S=[]
+            for i in range (len(training_set)):
+                S0 = pd.concat([dfs[i], dfs1[i]], ignore_index=True)
+                S.append(S0)
 
-            X1 = pd.concat(participants, ignore_index=True)
-            participants=[]
-            testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
-            for i in range(12):
-                S0 = pd.concat([dfs[testing_set[i]], dfs1[testing_set[i]]], ignore_index=True)
-                participants.append(S0)
-            X2 = pd.concat(participants)
+            X1 = pd.concat(S, ignore_index=True)
+            publish_redis("test", "Size of S="+str(len(S)))
+            #X2 = pd.concat([S0, S1, S3, S15, S17, S18, S32, S33, S36, S49, S50, S51])
 
             X_train = X1[columns]
             y_train = X1["label"]
-            X_test = X2[columns]
-            y_test = X2['label']
-
-            from sklearn.metrics import classification_report
+            # X_test = X2[columns]
+            # y_test = X2['label']
+            start=time.time()
+            publish_redis("test", "training starts")
             model = MLPClassifier(hidden_layer_sizes=(4,), activation='identity',
-                                   solver='lbfgs', alpha=0.1, random_state=1,
-                                   learning_rate='adaptive', momentum=0.3,
-                                   learning_rate_init=0.1, max_iter=100, batch_size=16)
-
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
-            score_ann = accuracy_score(y_test, y_pred)
-            publish_redis("test", "Score ANN: "+str(score_ann))
+                                       solver='lbfgs', alpha=0.1, random_state=1,
+                                       learning_rate='adaptive', momentum=0.3,
+                                       learning_rate_init=0.1, max_iter=100, batch_size=16)
 
             publish_redis("test", "New Model created!!!")
+            model.fit(X_train, y_train)
 
             publish_redis("test","Training Done!!!")
             publish_redis("test", "Saving model starts...!!")
+            Testing(mode,epoch)
             RedisSaveModel(Topic['model_mental_stress_app'], pickle.dumps(model))
+
+            #print("Saving model done...!!")
             publish_redis("test", "Saving model done...!!")
-            json_req["Score"]=score_ann
         else:
             print("Size of S"+str(len(control_data)))
             publish_redis("test", "Intermediate state save starts")
