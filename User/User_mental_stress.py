@@ -6,16 +6,7 @@ import csv
 import sys
 import os
 
-import tensorflow as tf
-from tensorflow import keras
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import RobustScaler
-from sklearn.metrics import confusion_matrix
-import scipy.stats
-from keras.models import model_from_json
-
 import numpy as np
-from sklearn import preprocessing
 import pandas as pd
 import datetime
 import neurokit2 as nk
@@ -207,10 +198,10 @@ def load_data(filename, chunksize):
     print("Uploading done!")
     print(i)
 
-def Testing():
+def Testing(overlap):
     print("Testing Starts")
-    #testing check (will remove)
-    testing_set=[0,1,3,15,17,18,32,33,36,49,50,51]
+    #testing_set=[1,2,4,16,18,19,33,34,37,50,51,52]
+    testing_set=[0,1,3,15,19,20,32,33,36,49,50,51]
     num_features = 15
     i=0
     control=[]
@@ -228,9 +219,9 @@ def Testing():
     stress_data = []
     for i in range(len(control)):
         publish_redis("test", "feature i= " + str(i))
-        control1 = create_features(60000, control[i])
+        control1 = create_features(60000, control[i],overlap)
         control_data.append(control1)
-        stress1 = create_features(60000, stress[i])
+        stress1 = create_features(60000, stress[i],overlap)
         stress_data.append(stress1)
 
     control_data = pd.concat(control_data)
@@ -293,7 +284,7 @@ def Testing():
     return score_ann
     #y_pred=model.predict(X_test)
     #print(y_pred)
-def create_features(window_size, df):
+def create_features(window_size, df,overlap):
     @contextlib.contextmanager
     def nostdout():
         save_stdout = sys.stdout
@@ -310,7 +301,7 @@ def create_features(window_size, df):
             curr_end = curr_start + window_size
             features = getfeatures(df[curr_start:curr_end])
             feature_array.append(features)
-            curr_start = curr_start + window_size
+            curr_start = curr_start + window_size/overlap
             curr_start = int(curr_start)
 
             analyzed = pd.DataFrame(data=feature_array, columns=["HR_mean", "HR_std", 'RMSSD', 'meanNN', 'sdNN',
@@ -346,7 +337,7 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[50000]
+            epoch_list=[2]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
 
@@ -371,12 +362,12 @@ def UserInput():
                         # publish it to trigger DBController
                         train=0
                         if(threshold=='1500'):
-                            train=45
+                            train=57
                         else:
-                            train=15
+                            train=12
                         testing_size=12
                         publish_redis(Topic["publish_mental_stress_app"], str(json.dumps({
-                            "size": max_data-testing_size,
+                            "size": 57,
                             'app':'mental-stress-app',
                             "current":0,
                             "training":train,
@@ -386,10 +377,10 @@ def UserInput():
                         GetResult(Topic["result_mental_stress_app"])
                         end = time.time()
                         print("time: " + str(end - start))
-                        acc=Testing()
-                        data.append([threshold,l,acc,end-start+upload_time, upload_time])
-                        WriteCSV(output_dir, data)
-                        print("done!")
+                        # acc=Testing(l)
+                        # data.append([threshold,60000/l,acc,end-start+upload_time, upload_time])
+                        # WriteCSV(output_dir, data)
+                        # print("done!")
 
                     publish_redis("MetricMonitor", str(json.dumps({
                         'app': 'mental-stress-app',
