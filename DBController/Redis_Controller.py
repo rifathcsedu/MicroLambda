@@ -133,15 +133,23 @@ def subscribe_redis_human():
                 print("Human Activity Training Done!!")
                 publish_redis(Topic['result_human_activity_app'],
                               str(json.dumps(message["data"].decode('utf8').replace("'", '"'))))
-
+def AllOne(arr):
+    print(arr)
+    for i in arr:
+        if(i!=1):
+            return False
+    return True
 #waiting for message to trigger
 def subscribe_redis_mental():
     global terminate
     start_time=None
+    datacheck=[]
+    last_set=0
     p=PubSubSubscriber(Topic["publish_mental_stress_app"])
     print("Mental Stress PubSub Controller Started...\nWaiting for input...")
     while terminate:
         message = p.get_message()
+
         if message and message['data']!=1:
             print(message)
             url = AppURL["mental_stress_app"]
@@ -150,11 +158,33 @@ def subscribe_redis_mental():
             print(check["current"])
             if (check["current"] == 0):
                 start_time = time.time()
+                datacheck=[0]*int(check["size"])
                 print("Start Time "+str(start_time))
             if (check["current"]< check["size"]):
-                cmd = "curl " + url + " --data-binary " + json.dumps(message["data"].decode('utf8').replace("'", '"'))
-                print(cmd)
-                print(os.system(cmd))
+                if(check["status"]=="Pending"):
+                    if(check["training"]==check["size"]):
+                        cmd = "curl " + url + " --data-binary '" + json.dumps(check)+"' &"
+                        print(cmd)
+                        print(os.system(cmd))
+                    else:
+                        j=int(check["current"])
+                        while (j+int(check["training"])<int(check["size"])):
+                            check["current"]=j
+                            print("MicroLambda for current="+str(j))
+                            last_set=j
+                            cmd = "curl " + url + " --data-binary '" + json.dumps(check)+"' &"
+                            print(cmd)
+                            print(os.system(cmd))
+                            j+=check["training"]
+                else:
+                    for i in range(int(check["current"])-int(check["training"]),int(check["current"])):
+                        datacheck[i]=1
+                    if(AllOne(datacheck[:last_set+check["training"]])==True):
+                        check["status"]="Pending"
+                        check["current"]=last_set+check["training"]
+                        cmd = "curl " + url + " --data-binary '" + json.dumps(check)+"' &"
+                        print(cmd)
+                        print(os.system(cmd))
             else:
                 total_time = time.time() - start_time
                 print("Computation Time: ")
