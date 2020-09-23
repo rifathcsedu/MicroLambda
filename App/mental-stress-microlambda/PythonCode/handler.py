@@ -161,15 +161,15 @@ def handle (req):
                 print(i)
                 control[i]=loaded_data[0]
                 stress[i]=loaded_data[1]
-        #control_data=control+control_data
-        for i in range(len(control_data)):
-            control.append(control_data[i])
-        for i in range(len(stress_data)):
-            stress.append(stress_data[i])
-        #stress_data=stress+stress_data
-        control_data=control[:]
-        stress_data=stress[:]
-        #publish_redis("test","S is "+str(len(control_data)))
+        control_data=control+control_data
+        # for i in range(len(control_data)):
+        #     control.append(control_data[i])
+        # for i in range(len(stress_data)):
+        #     stress.append(stress_data[i])
+        stress_data=stress+stress_data
+        # control_data=control[:]
+        # stress_data=stress[:]
+        # #publish_redis("test","S is "+str(len(control_data)))
         #print(control_data)
         #print(stress_data)
         control_data = pd.concat(control_data)
