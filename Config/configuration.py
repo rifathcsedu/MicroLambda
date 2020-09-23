@@ -30,6 +30,7 @@ Topic = dict(
     input_mental_stress_app='StressInput',
     result_mental_stress_app='ResultStressApp',
     model_mental_stress_app='ModelStressApp',
+    feature_mental_stress_app='FeatureStressApp',
 )
 
 MicroLambda=dict(

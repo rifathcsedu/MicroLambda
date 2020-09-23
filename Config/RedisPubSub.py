@@ -53,7 +53,9 @@ def Cleaning(topic):
 def CleaningModel(topic):
     r.hdel(topic,topic+"1")
     print("model deleted!")
-
+def UploadData(topic,data):
+    #publish_redis("test","uploading starts")
+    return r.rpush(topic, data)
 #waiting for results
 def GetResult(topic):
     p = r.pubsub()

@@ -2,7 +2,7 @@ import json
 import csv
 
 
-Iteration=50
+Iteration=1
 sleep_time=5
 
 Server=dict(
@@ -30,11 +30,12 @@ Topic = dict(
     input_mental_stress_app='StressInput',
     result_mental_stress_app='ResultStressApp',
     model_mental_stress_app='ModelStressApp',
+    feature_mental_stress_app='FeatureStressApp',
 )
 
 MicroLambda=dict(
-    short_lambda=['120','60','30']
-    #short_lambda=['1500','300','240','180']
+    #short_lambda=['120','60','30']
+    short_lambda=['1500']
 
 )
 
