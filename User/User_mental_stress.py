@@ -337,7 +337,7 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[2]
+            epoch_list=[2,3]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
 
@@ -356,6 +356,7 @@ def UserInput():
                         time.sleep(sleep_time)
                         print("Cleaning Model Started!")
                         CleaningModel(Topic["model_mental_stress_app"])
+                        Cleaning(Topic["feature_mental_stress_app"])
                         print("Taking Break for "+str(sleep_time)+" sec!")
                         time.sleep(sleep_time)
                         start = time.time()
@@ -364,23 +365,28 @@ def UserInput():
                         if(threshold=='1500'):
                             train=57
                         else:
-                            train=12
-                        testing_size=12
+                            train=7
+                        testing_size=7
                         publish_redis(Topic["publish_mental_stress_app"], str(json.dumps({
                             "size": 57,
+                            "status":"Pending",
                             'app':'mental-stress-app',
                             "current":0,
                             "training":train,
                             "epoch":int(l),
                             "threshold": int(threshold)
                         })))
-                        GetResult(Topic["result_mental_stress_app"])
+                        return_data=GetResult(Topic["result_mental_stress_app"])
                         end = time.time()
                         print("time: " + str(end - start))
+                        return_data= json.loads(return_data)
+                        print(return_data)
+                        #print(type(return_data))
+                        print(return_data["Score"])
                         # acc=Testing(l)
-                        # data.append([threshold,60000/l,acc,end-start+upload_time, upload_time])
-                        # WriteCSV(output_dir, data)
-                        # print("done!")
+                        data.append([threshold,60000/l,return_data["Score"],end-start+upload_time, upload_time])
+                        WriteCSV(output_dir, data)
+                        print("done!")
 
                     publish_redis("MetricMonitor", str(json.dumps({
                         'app': 'mental-stress-app',
