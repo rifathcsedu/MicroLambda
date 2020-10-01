@@ -28,6 +28,7 @@ AppURL = dict(
     face_app = 'http://'+ip+':8080/function/face-recognition-microlambda',
     air_pollution_app = 'http://'+ip+':8080/function/air-pollution-microlambda',
     human_activity_app='http://'+ip+':8080/function/human-activity-microlambda',
+    mental_stress_app='http://'+ip+':8080/function/mental-stress-microlambda',
 )
 
 #publish via redis
@@ -52,7 +53,9 @@ def Cleaning(topic):
 def CleaningModel(topic):
     r.hdel(topic,topic+"1")
     print("model deleted!")
-
+def UploadData(topic,data):
+    #publish_redis("test","uploading starts")
+    return r.rpush(topic, data)
 #waiting for results
 def GetResult(topic):
     p = r.pubsub()
@@ -63,6 +66,6 @@ def GetResult(topic):
         # print(message)
         if message and message["data"] != 1:
             print("Got output: " + str(json.loads(message["data"])))
-            break
+            return message["data"]
 
 publish_redis("test",redis_host)

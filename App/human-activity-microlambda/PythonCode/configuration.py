@@ -2,7 +2,7 @@ import json
 import csv
 
 
-Iteration=2
+Iteration=1
 sleep_time=5
 
 Server=dict(
@@ -26,12 +26,17 @@ Topic = dict(
     input_air_pollution_app='PollutionInput',
     result_air_pollution_app='ResultPollutionApp',
     model_air_pollution_app='ModelPollutionApp',
-
+    publish_mental_stress_app='StressStateStore',
+    input_mental_stress_app='StressInput',
+    result_mental_stress_app='ResultStressApp',
+    model_mental_stress_app='ModelStressApp',
+    feature_mental_stress_app='FeatureStressApp',
 )
 
 MicroLambda=dict(
-    long_lambda='1500',
-    short_lambda='1500'
+    #short_lambda=['120','60','30']
+    short_lambda=['360']
+
 )
 
 
@@ -42,3 +47,40 @@ def WriteCSV(path, data):
         csvwriter = csv.writer(csvfile)
         csvwriter.writerows(data)
     print("Writing Done!")
+
+
+
+
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def RepresentsFloat(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
+def ReadCSV(path):
+    data=[]
+    with open(path, 'r') as csvfile:
+        csvreader = csv.reader(csvfile)
+        #fields = csvreader.next()
+
+        for row_data in csvreader:
+            temp = []
+            for item in row_data:
+                if(RepresentsInt(item)):
+                    new_item=int(item)
+                elif(RepresentsFloat(item)):
+                    new_item=float(item)
+                else:
+                    new_item=item
+                temp.append(new_item)
+            data.append(temp)
+    return data
