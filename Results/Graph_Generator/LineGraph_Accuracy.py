@@ -8,7 +8,7 @@ sys.path.append('../../Class/')
 
 from configuration import *
 
-GraphData={1:{1:{"x_label":"Number of Images","y_label":"Execution Time (sec)","title":"Execution Time for Face Recognition Application"}},2:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Air Pollution Training"},2:{"x_label":"Epoch Size","y_label":"RMSE","title":"RMSE for Air Pollution Training"}},3:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Human Activity Classification Training"},2:{"x_label":"Epoch Size","y_label":"Accuracy (%)","title":"Accuracy rate for Human Activity Classification Training"},3:{"x_label":"Epoch Size","y_label":"Error (%)","title":"Error rate for Human Activity Classification Training"}}}
+GraphData={1:{1:{"x_label":"Number of Images","y_label":"Execution Time (sec)","title":"Execution Time for Face Recognition Application"}},2:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Air Pollution Training"},2:{"x_label":"Epoch Size","y_label":"RMSE","title":"RMSE for Air Pollution Training"}},3:{1:{"x_label":"Epoch Size","y_label":"Execution Time (sec)","title":"Execution Time for Human Activity Classification Training"},2:{"x_label":"Epoch Size","y_label":"Accuracy (%)","title":"Accuracy rate for Human Activity Classification Training"},3:{"x_label":"Epoch Size","y_label":"Error (%)","title":"Error rate for Human Activity Classification Training"}},4:{1:{"x_label":"Overlapping Window","y_label":"Execution Time (sec)","title":"Execution Time for Mental Stress Classification Application"}}}
 
 def AccuracyGraph(FileName):
     data=ReadCSV(FileName)
@@ -157,12 +157,13 @@ def TimeGraph(FileName):
     x =df_avg.Epoch.unique()
     x.sort()
     x=x.tolist()
+    x=x[::-1]
     print(x)
     line_list={}
     for th in unique_threshold:
         df_temp=df_avg[df_avg['Threshold'] == th]
         df_temp = df_temp.drop('Threshold', 1)
-        df_temp=df_temp.sort_values(by=['Epoch'])
+        df_temp=df_temp.sort_values(by=['Epoch'],ascending=[0])
 
         df_temp = df_temp.drop('Epoch', 1)
         df_temp=df_temp["Time"].tolist()
@@ -192,6 +193,10 @@ def GetDataForApp(app_name,type):
         return TimeGraph("../CSV/Air-Pollution-App/Execution_Time_Air_Pollution.csv")
     elif (app_name == 2 and type == 2):
         return AccuracyGraph("../CSV/Air-Pollution-App/Execution_Time_Air_Pollution.csv")
+    elif (app_name==4 and type==1):
+        return TimeGraph("../CSV/Mental-Stress-App/Execution_Time_Mental_Stress_App.csv")
+    elif (app_name == 4 and type == 2):
+        return AccuracyGraph("../CSV/Mental-Stress-App/Execution_Time_Mental_Stress_App.csv")
 
 
 #main_function
@@ -208,12 +213,15 @@ else:
 
     fig, ax = plt.subplots()
     color_data=0.9
+
     for i in y_line_list:
         print (i)
         if(len(x_axis)==len(y_line_list[i])):
-            ax.plot(x_axis,y_line_list[i],c=str(color_data))
+            ax.plot(x_axis,y_line_list[i])
+            #ax.plot(x_axis,y_line_list[i],c=str(color_data))
         else:
-            ax.plot(x_axis[:len(y_line_list[i])], y_line_list[i],c=str(color_data))
+            ax.plot(x_axis[:len(y_line_list[i])], y_line_list[i])
+            #ax.plot(x_axis[:len(y_line_list[i])], y_line_list[i],c=str(color_data))
         color_data-=.15
     plt.title(GraphData[app_name][type]["title"])
     plt.legend(unique_threshold_legend)

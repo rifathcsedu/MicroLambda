@@ -337,7 +337,8 @@ def UserInput():
         #threshold = MicroLambda["short_lambda"]
         if (str(d) == "1"):
             #print("\n\n1. Epoch Size\n2. Exit")
-            epoch_list=[2,3]
+            epoch_list=[1]
+            #[4,3,2,1]
             for l in epoch_list:
                 for threshold in MicroLambda["short_lambda"]:
 
@@ -365,8 +366,8 @@ def UserInput():
                         if(threshold=='1500'):
                             train=57
                         else:
-                            train=7
-                        testing_size=7
+                            train=14
+                        testing_size=14
                         publish_redis(Topic["publish_mental_stress_app"], str(json.dumps({
                             "size": 57,
                             "status":"Pending",
@@ -384,7 +385,7 @@ def UserInput():
                         #print(type(return_data))
                         print(return_data["Score"])
                         # acc=Testing(l)
-                        data.append([threshold,60000/l,return_data["Score"],end-start+upload_time, upload_time])
+                        data.append([threshold,60000/l,return_data["Score"],end-start+upload_time, upload_time,train])
                         WriteCSV(output_dir, data)
                         print("done!")
 
