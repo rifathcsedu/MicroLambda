@@ -113,7 +113,7 @@ def subscribe_redis_monitor_app():
                     print("Monitoring Mental Stress App starts...")
                     filename = "Mental_Network_epoch" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".pcap"
                     cmd = "sudo tshark -i enp1s0 -w ../Results/PCAP/Mental-Stress-App/" + filename + " &"
-                    os.system(cmd)
+                    #os.system(cmd)
                     os.system("pwd")
                     filename_net = "../Results/CSV/Mental-Stress-App/CPU-MEM/Mental_CPU_Memory" + str(check["size"]) + "_threshold_" + str(check["threshold"]) + ".csv"
                     os.system("sudo rm " + filename_net)
