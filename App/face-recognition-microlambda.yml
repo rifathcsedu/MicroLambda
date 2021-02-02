@@ -4,6 +4,6 @@ functions:
     image: face-recognition-microlambda:latest
     lang: dockerfile
 provider:
-  gateway: http://192.168.0.104:8080/
+  gateway: http://192.168.0.105:8080/
   name: openfaas
 version: 1.0

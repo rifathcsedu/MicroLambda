@@ -112,7 +112,6 @@ def handle (req):
     stress=[]
     i=current
     while(i<current+training_size and i<size):
-
         temp=LoadData(Topic["input_mental_stress_app"], i, i)
         #print(pickle.loads(temp[0]))
         #print(training_set[i])
@@ -121,24 +120,12 @@ def handle (req):
         control.append(loaded_data[0])
         stress.append(loaded_data[1])
         i+=1
-
     inter_current=current
     current=i
     publish_redis("test", "current="+str(current))
     #S_load=None
     control_data = []
     stress_data = []
-    '''
-    temp=RedisLoadModel(Topic["model_mental_stress_app"])
-    if(temp==None):
-        S_load=[]
-        publish_redis("test", "empty data")
-    else:
-        S_load=pickle.loads(temp)
-        control_data = S_load[0]
-        stress_data = S_load[1]
-        publish_redis("test", "loaded data")
-    '''
     publish_redis("test", "loaded data")
     for i in range(0,len(control)):
         publish_redis("test", "feature i= " + str(i))

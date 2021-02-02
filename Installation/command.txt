@@ -1,1 +1,1 @@
-echo -n 10048fe4d51632a6bb3783d0a5b55778cbfcf042ca5c944c9cd4637d39fc53c6 | faas-cli login --username=admin --password-stdin --gateway http://10.200.87.202:8080
+echo -n baded4e467b4ea70dab8bc7a844ddfe2c517013b32ff045b6f6fd19f6e9f1e03 | faas-cli login --username=admin --password-stdin --gateway http://192.168.0.105:8080

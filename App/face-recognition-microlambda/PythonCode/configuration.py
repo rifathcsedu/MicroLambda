@@ -2,7 +2,7 @@ import json
 import csv
 
 
-Iteration=1
+Iteration=50
 sleep_time=5
 
 Server=dict(
@@ -10,7 +10,7 @@ Server=dict(
     DBServer='DBIPAddress'
 )
 Database = dict(
-    host = '192.168.0.107',
+    host = '192.168.0.105',
     port = '6379',
     password='',
 )
